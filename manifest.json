@@ -1,7 +1,7 @@
-{
-  "name": "Counter",
-  "author": "Placeholder-author",
-  "description": "An application for Aragon",
+ {
+  "name": "Commitee Manager",
+  "author": "Paulo Colombo",
+  "description": "Committee manager app",
   "details_url": "/dist/meta/details.md",
   "source_url": "https://<placeholder-repository-url>",
   "icons": [{

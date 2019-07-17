@@ -12,10 +12,10 @@ function App() {
         {syncing && <Syncing />}
         <Count>Count: {count}</Count>
         <Buttons>
-          <Button mode="secondary" onClick={() => api.decrement(1)}>
+          <Button mode="secondary" onClick={() => console.log("increment counter")}>
             Decrement
           </Button>
-          <Button mode="secondary" onClick={() => api.increment(1)}>
+          <Button mode="secondary" onClick={() => console.log("decrement")}>
             Increment
           </Button>
         </Buttons>

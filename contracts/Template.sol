@@ -20,8 +20,7 @@ import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
-import "./CounterApp.sol";
-
+import "./CommitteeManager.sol";
 
 contract TemplateBase is APMNamehash {
     ENS public ens;
@@ -67,18 +66,21 @@ contract Template is TemplateBase {
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         address root = msg.sender;
-        bytes32 appId = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("commitee-manager-app")));
+        bytes32 appId = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("app")));
+        bytes32 commId = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("committee-manager-app")));
         bytes32 votingAppId = apmNamehash("voting");
         bytes32 tokenManagerAppId = apmNamehash("token-manager");
 
-        CounterApp app = CounterApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+//        CounterApp app = CounterApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
         Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
         TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+        CommitteeManager committeeManager = CommitteeManager(dao.newAppInstance(commId, latestVersionAppBase(commId)));
+        committeeManager.initialize();
 
         MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "App token", 0, "APP", true);
         token.changeController(tokenManager);
 
-        app.initialize();
+//        app.initialize();
         tokenManager.initialize(token, true, 0);
         // Initialize apps
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
@@ -88,16 +90,22 @@ contract Template is TemplateBase {
 
         acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
 
-        acl.createPermission(voting, app, app.INCREMENT_ROLE(), voting);
-        acl.createPermission(ANY_ENTITY, app, app.DECREMENT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, committeeManager, committeeManager.CREATE_COMMITTEE_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, committeeManager, committeeManager.EDIT_COMMITTEE_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, committeeManager, committeeManager.DELETE_COMMITTEE_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, committeeManager, committeeManager.EDIT_COMMITTEE_MEMBERS_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, committeeManager, committeeManager.EDIT_COMMITTEE_PERMISSIONS_ROLE(), voting);
+
         acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
 
+//        acl.grantPermission(app, tokenManager, tokenManager.MINT_ROLE());
+
         // Clean up permissions
-        acl.grantPermission(root, dao, dao.APP_MANAGER_ROLE());
+        acl.grantPermission(committeeManager, dao, dao.APP_MANAGER_ROLE());
         acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(root, dao, dao.APP_MANAGER_ROLE());
 
-        acl.grantPermission(root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        acl.grantPermission(committeeManager, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
 
