@@ -33,6 +33,5 @@ api.store(
 )
 
 async function getValue() {
-    console.log("asdasdas");
-  // return parseInt(await api.call('value').toPromise(), 10)
+  return parseInt(await api.call('value').toPromise(), 10)
 }
