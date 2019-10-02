@@ -1,7 +1,7 @@
- {
-  "name": "Commitee Manager",
-  "author": "Paulo Colombo",
-  "description": "Committee manager app",
+{
+  "name": "Committee Manager",
+  "author": "Paulo J. Colombo",
+  "description": "A committee manager app for Aragon",
   "details_url": "/dist/meta/details.md",
   "source_url": "https://<placeholder-repository-url>",
   "icons": [{
