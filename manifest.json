@@ -10,6 +10,9 @@
   }],
   "screenshots": [
     { "src": "/dist/meta/screenshot-1.png" }
+    { "src": "/dist/meta/screenshot-2.png" }
+    { "src": "/dist/meta/screenshot-3.png" }
+    { "src": "/dist/meta/screenshot-4.png" }
   ],
   "start_url": "/dist/index.html",
   "script": "/dist/script.js"
