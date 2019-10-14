@@ -14,19 +14,11 @@ const api = new AragonApi()
 api.store(
   async (state, event) => {
     let newState
-    console.log("The event is")
-    console.log(event.event)
     switch (event.event) {
       case INITIALIZATION_TRIGGER:
         newState = {
           committees: [],
         }
-        break
-      case 'Increment':
-        newState = { count: await getValue() }
-        break
-      case 'Decrement':
-        newState = { count: await getValue() }
         break
       case 'CreateCommittee':
         let { committeeAddress: address, name, description, initialMembers, committeeType, votingType, tokenSymbol} = event.returnValues
@@ -45,8 +37,6 @@ api.store(
             }
           ]
         }
-        console.log("[CreateCommittee Event] NewState:")
-        console.log(newState)
         break
       case 'RemoveCommittee':
           newState = {
@@ -61,13 +51,10 @@ api.store(
           ...state,
           committees: updateCommitteesMembers(state.committees, event.returnValues.committeeAddress, member, event.event === 'AddMember')
         }
-        console.log("New state")
-        console.log(newState)
         break
       default:
         newState = state
     }
-
     return newState
   },
   [
@@ -75,7 +62,3 @@ api.store(
     of({ event: INITIALIZATION_TRIGGER }),
   ]
 )
-
-async function getValue() {
-  return parseInt(await api.call('value').toPromise(), 10)
-}

@@ -20,6 +20,10 @@ import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
+import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/apps-finance/contracts/Finance.sol";
+
+
 import "./CommitteeManager.sol";
 
 
@@ -27,6 +31,10 @@ contract TemplateBase is APMNamehash {
     ENS public ens;
     DAOFactory public fac;
 
+    bytes32 constant internal VAULT_APP_ID = 0x7e852e0fcfce6551c13800f1e7476f982525c2b5277ba14b24339c68416336d1;
+    bytes32 constant internal FINANCE_APP_ID = 0xbf8491150dafc5dcaee5b861414dca922de09ccffa344964ae167212e8c673ae;
+    bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x6b20a3010614eeebf2138ccec99f028a61c811b3b1a3343b6ff635985c75c91f;
+    bytes32 constant internal VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
 
@@ -56,6 +64,7 @@ contract Template is TemplateBase {
 
     uint64 constant PCT = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
+    uint64 constant DEFAULT_FINANCE_PERIOD = uint64(30 days);
 
     constructor(ENS ens) TemplateBase(DAOFactory(0), ens) public {
         tokenFactory = new MiniMeTokenFactory();
@@ -68,18 +77,21 @@ contract Template is TemplateBase {
 
         address root = msg.sender;
         bytes32 appId = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("committee-manager-app")));
-        bytes32 votingAppId = apmNamehash("voting");
-        bytes32 tokenManagerAppId = apmNamehash("token-manager");
-
+        
+        Vault vault = Vault(dao.newAppInstance(VAULT_APP_ID, latestVersionAppBase(VAULT_APP_ID)));
+        Finance finance = Finance(dao.newAppInstance(FINANCE_APP_ID, latestVersionAppBase(FINANCE_APP_ID)));
         CommitteeManager app = CommitteeManager(dao.newAppInstance(appId, latestVersionAppBase(appId)));
-        Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
-        TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+        Voting voting = Voting(dao.newAppInstance(VOTING_APP_ID, latestVersionAppBase(VOTING_APP_ID)));
+        TokenManager tokenManager = TokenManager(dao.newAppInstance(TOKEN_MANAGER_APP_ID, latestVersionAppBase(TOKEN_MANAGER_APP_ID)));
 
         MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "App token", 0, "APP", true);
         token.changeController(tokenManager);
 
         // Initialize apps
+        vault.initialize();
+        finance.initialize(vault, DEFAULT_FINANCE_PERIOD);
         app.initialize(tokenFactory, ens, voting);
+
         tokenManager.initialize(token, true, 0);
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
 
@@ -91,6 +103,12 @@ contract Template is TemplateBase {
         acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
 
         //Set committee manager permissions.
+        acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
+
+        acl.createPermission(voting, finance, finance.EXECUTE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.MANAGE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
+
         acl.createPermission(voting, app, app.CREATE_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.DELETE_COMMITTEE_ROLE(), voting);

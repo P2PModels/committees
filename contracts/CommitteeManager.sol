@@ -25,6 +25,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");              // finance.aragonpm.eth
     * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager");  // token-manager.aragonpm.eth
     */
+    
     bytes32 constant internal VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;
     bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x6b20a3010614eeebf2138ccec99f028a61c811b3b1a3343b6ff635985c75c91f;
 
@@ -80,25 +81,16 @@ contract BaseTemplate is APMNamehash, IsContract {
     function _createTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _tokenManager, _tokenManager.MINT_ROLE(), _manager);
         _acl.createPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE(), _manager);
-        // _acl.createPermission(_grantee, _tokenManager, _tokenManager.ASSIGN_ROLE(), _manager);
-        // _acl.createPermission(_grantee, _tokenManager, _tokenManager.ISSUE_ROLE(), _manager);
-        // _acl.createPermission(_grantee, _tokenManager, _tokenManager.REVOKE_VESTINGS_ROLE(), _manager);
     }
 
     function _grantTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _grantee) internal {
         _acl.grantPermission(_grantee, _tokenManager, _tokenManager.MINT_ROLE());
         _acl.grantPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE());
-        // _acl.grantPermission(_grantee, _tokenManager, _tokenManager.ASSIGN_ROLE());
-        // _acl.grantPermission(_grantee, _tokenManager, _tokenManager.ISSUE_ROLE());
-        // _acl.grantPermission(_grantee, _tokenManager, _tokenManager.REVOKE_VESTINGS_ROLE());
     }
 
     function _changeTokenManagerPermissionManager(ACL _acl, TokenManager _tokenManager, address _manager) internal {
         _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.MINT_ROLE());
         _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.BURN_ROLE());
-        // _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.ASSIGN_ROLE());
-        // _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.ISSUE_ROLE());
-        // _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.REVOKE_VESTINGS_ROLE());
     }
 
     function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
@@ -154,9 +146,6 @@ contract BaseTemplate is APMNamehash, IsContract {
         return _installApp(_dao, _appId, new bytes(0), false);
     }
 
-    function _installDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, new bytes(0), true);
-    }
 
     function _installApp(Kernel _dao, bytes32 _appId, bytes _data, bool _setDefault) internal returns (address) {
         address latestBaseAppAddress = _latestVersionAppBase(_appId);
@@ -179,11 +168,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         emit DeployToken(address(token));
         return token;
     }
-
-    function _ensureMiniMeFactoryIsValid(address _miniMeFactory) internal view {
-        require(isContract(address(_miniMeFactory)), ERROR_MINIME_FACTORY_NOT_CONTRACT);
-    }
-
+    
     function _getTokenType(uint8 _type) internal returns (bool transferable, uint256 maxAccount) {
         if (_type == 0) {
             //Membership Token Governance
@@ -210,18 +195,13 @@ contract CommitteeManager is AragonApp, BaseTemplate {
     using SafeMath for uint256;
 
     /// Events
-    event Increment(address indexed entity, uint256 step);
-    event Decrement(address indexed entity, uint256 step);
-
     event CreateCommittee(address indexed committeeAddress, bytes32 name, string description,
     uint8 votingType, uint8 committeeType, string tokenSymbol, address[] initialMembers, uint64[3] votingInfo);
     event RemoveCommittee(address indexed committeeAddress);
     event AddMember(address indexed committeeAddress, address member);
     event RemoveMember(address indexed committeeAddress, address member);
-
     event AddPermission(address indexed committeeAddress, address app, bytes32 appName, bytes32 role);
     event RemovePermission(address indexed committeeAddress, address app, bytes32 appName, bytes32 role);
-   
     event ModifyCommittee(address indexed committeeAddress, string description);
 
     //Types
@@ -230,16 +210,12 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         string description;
         address tokenManagerAppAddress;
         address votingAppAddress;
-        //        Por consenso, consenso-mayoria, mayoria relativa, mayoria absoluta.
         uint8 votingType;
-        // equity, membership and reputation.
         uint8 committeeType;
 
     }
 
     /// State
-    uint256 public value;
-
     mapping(address => Committee) committees;
     Voting internal generalVoting;
     
@@ -259,15 +235,14 @@ contract CommitteeManager is AragonApp, BaseTemplate {
     }
 
     /**
-      * @notice Create a new committee
-        @param _name committee's name
-        @param _description committee's description
-        @param _tokenSymbol committee's token symbol
-        @param _initialMembers committee initial members
+     * @notice Create a new committee.
+     * @param _name Committee's name
+     * @param _description Committee's description
+     * @param _tokenSymbol Committee's token
+     * @param _types Committee type and Voting app type.
+     * @param  _initialMembers Committee's initial members address.
+     * @param _votingInfo It contains Voting configuration data like: approval percentage, quorum percentage and duration.
      */
-    //uint64 support acceptance duration
-    //types 0: committee , 1: voting
-    //tokenInfo: 0: name, 1: symbol
     function createCommittee(bytes32 _name, string _description, string _tokenSymbol, uint8[2] _types, 
         address[] _initialMembers, uint64[3] _votingInfo) external auth(CREATE_COMMITTEE_ROLE) {
         address tokenManager;
@@ -278,6 +253,11 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         emit CreateCommittee(tokenManager, _name, _description, _types[1], _types[0], _tokenSymbol, _initialMembers, _votingInfo);
     }
 
+    /**
+     * @notice Add a new member to the committee.
+     * @param _committee Committee's address
+     * @param _member Committee's member address
+     */
     function addMember(address _committee, address _member) external auth(EDIT_COMMITTEE_MEMBERS_ROLE) {
         address tmAddress = committees[_committee].tokenManagerAppAddress;
         _mintTokens(TokenManager(tmAddress), _member, 1);
@@ -285,6 +265,11 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         emit AddMember(_committee, _member);
     }
 
+    /**
+     * @notice Delete a member from committee.
+     * @param _committee Committee's address
+     * @param _committee Committee's member address.
+     */
     function removeMember(address _committee, address _member) external auth(EDIT_COMMITTEE_MEMBERS_ROLE) {
         address tmAddress = committees[_committee].tokenManagerAppAddress;
 
@@ -293,6 +278,11 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         emit RemoveMember(_committee, _member);
     }
 
+    /**
+     * @notice Delete committee.
+     * @param _committee Committee's address
+     * @param _committee Committee's members addreses.
+     */
     function removeCommittee(address _committee, address[] _members) external auth(DELETE_COMMITTEE_ROLE) {
         address tmAddress = committees[_committee].tokenManagerAppAddress;
         //Delete all members
@@ -302,25 +292,51 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         emit RemoveCommittee(_committee);
     }
 
+    /**
+     * @notice Add permission to committee.
+     * @param _committee Committee's address
+     * @param _app Entity address
+     * @param _appName Entity name
+     * @param _role Permission
+     */
     function addPermission(address _committee, address _app, bytes32 _appName,
         bytes32 _role) external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE) {
         require(committees[_committee].tokenManagerAppAddress != address(0), "The committee doesn't exist");
-        value = value.add(1);
+
+        //...
+
     }
 
+    /**
+     * @notice Remove permission from committee
+     * @param _committee Committee's address
+     * @param _app Entity address
+     * @param _appName Entity name
+     * @param _role Permission
+     */
     function removePermission(address _committee, address _app, bytes32 _appName,
         bytes32 _role) external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE) {
         require(committees[_committee].tokenManagerAppAddress != address(0), "The committee doesnt't exist");
-        value = value.add(1);
+
+        //...
     }
 
+    /**
+     * @notice Modify committee.
+     * @param _committee Committee's address
+     * @param _description Committee's description
+     */
     function modifyCommittee(address _committee, string _description) external auth(EDIT_COMMITTEE_ROLE) {
         require(committees[_committee].tokenManagerAppAddress != address(0), "The committee doesn't exist");
+        
         committees[_committee].description = _description;
 
         emit ModifyCommittee(_committee, _description);
     }
 
+    /**
+        It creates a new TokenManager and Voting app.
+    */ 
     function _createCommitteeApps(string _committeeTokenSymbol, address[] _initialMembers,
         uint64[3] _votingInfo, uint8 _tokenType) internal returns (address tmAddress, address vAddress) {
         Kernel _dao = Kernel(kernel());
