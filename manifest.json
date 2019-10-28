@@ -2,18 +2,18 @@
   "name": "Committee Manager",
   "author": "Paulo J. Colombo",
   "description": "A committee manager app for Aragon",
-  "details_url": "/dist/meta/details.md",
+  "details_url": "/public/meta/details.md",
   "source_url": "https://<placeholder-repository-url>",
   "icons": [{
-    "src": "/dist/meta/icon.svg",
+    "src": "/public/meta/icon.svg",
     "sizes": "56x56"
   }],
   "screenshots": [
-    { "src": "/dist/meta/screenshot-1.png" },
-    { "src": "/dist/meta/screenshot-2.png" },
-    { "src": "/dist/meta/screenshot-3.png" },
-    { "src": "/dist/meta/screenshot-4.png" }
+    { "src": "/public/meta/screenshot-1.png" },
+    { "src": "/public/meta/screenshot-2.png" },
+    { "src": "/public/meta/screenshot-3.png" },
+    { "src": "/public/meta/screenshot-4.png" }
   ],
-  "start_url": "/dist/index.html",
-  "script": "/dist/script.js"
+  "start_url": "/index.html",
+  "script": "/script.js"
 }

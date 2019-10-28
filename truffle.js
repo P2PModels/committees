@@ -1,6 +1,6 @@
 /**
  * https://github.com/aragon/aragonOS/blob/v4.0.0/truffle-config.js
- */
+ *
 const homedir = require('homedir')
 const path = require('path')
 
@@ -64,4 +64,6 @@ module.exports = {
       gasPrice: 0x01,
     },
   },
-}
+}*/
+
+module.exports = require('@aragon/os/truffle-config')

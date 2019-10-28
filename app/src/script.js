@@ -1,30 +1,37 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
-import { of } from 'rxjs'
-import AragonApi from '@aragon/api'
+// import { of } from 'rxjs'
+// import AragonApi from '@aragon/api'
+import Aragon, { events } from '@aragon/api'
 import { hexToUtf8 } from 'web3-utils';
 
 
 import { getTokenName, updateCommitteesMembers, deleteCommittee } from '../src/util/'
 
-const INITIALIZATION_TRIGGER = Symbol('INITIALIZATION_TRIGGER')
+// const INITIALIZATION_TRIGGER = Symbol('INITIALIZATION_TRIGGER')
 
-const api = new AragonApi()
+// const api = new AragonApi()
 
-api.store(
-  async (state, event) => {
-    let newState
-    switch (event.event) {
-      case INITIALIZATION_TRIGGER:
-        newState = {
-          committees: [],
-        }
-        break
+const INITIAL_STATE = {
+  committees: [],
+}
+
+const app = new Aragon()
+
+app.store(
+  async (state, { event, returnValues }) => {
+    console.log(state, event, returnValues);
+    let nextState = { ...state }
+    
+    if(state == null)
+      nextState = INITIAL_STATE
+
+    switch (event) {
       case 'CreateCommittee':
-        let { committeeAddress: address, name, description, initialMembers, committeeType, votingType, tokenSymbol} = event.returnValues
-        newState = {
+        let { committeeAddress: address, name, description, initialMembers, committeeType, votingType, tokenSymbol} = returnValues
+        nextState = {
           ...state,
-          committees: [...state.committees, 
+          committees: [ ...state.committees, 
             {
               name: hexToUtf8(name), 
               description,
@@ -39,26 +46,23 @@ api.store(
         }
         break
       case 'RemoveCommittee':
-          newState = {
+          nextState = {
             ...state,
-            committees: deleteCommittee(state.committees, event.returnValues.committeeAddress)
+            committees: deleteCommittee(state.committees, returnValues.committeeAddress)
           }
           break
       case 'RemoveMember':
       case 'AddMember':
-        let  {member} = event.returnValues
-        newState = {
+        let  { member } = returnValues
+        nextState = {
           ...state,
-          committees: updateCommitteesMembers(state.committees, event.returnValues.committeeAddress, member, event.event === 'AddMember')
+          committees: updateCommitteesMembers(state.committees, returnValues.committeeAddress, member, event === 'AddMember')
         }
         break
-      default:
-        newState = state
+      
     }
-    return newState
-  },
-  [
-    // Always initialize the store with our own home-made event
-    of({ event: INITIALIZATION_TRIGGER }),
-  ]
+
+    return nextState
+    
+  }
 )

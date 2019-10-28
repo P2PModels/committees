@@ -1,9 +1,15 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState } from 'react'
 import { useAragonApi } from '@aragon/api-react'
-import { Main, Button } from '@aragon/ui'
-import { AppBar } from '@aragon/ui'
-import { AppView, BaseStyles } from '@aragon/ui'
-import { SidePanel, NavigationBar, TabBar } from '@aragon/ui'
+import {
+  Main,
+  Button,
+  AppBar,
+  AppView,
+  BaseStyles,
+  SidePanel,
+  NavigationBar,
+  TabBar,
+} from '@aragon/ui'
 
 import NewCommitteePanel from './components/SidePanels/NewCommittee/NewCommitteePanel'
 import NewMemberPanel from './components/SidePanels/NewMember/NewMemberPanel'
@@ -14,54 +20,78 @@ import styled from 'styled-components'
 
 import { utf8ToHex } from 'web3-utils'
 
-import {EMPTY_COMMITTEE} from '../src/util'
+import { EMPTY_COMMITTEE } from '../src/util'
 
-
-const INITIAL_TABS = ["Info", "Permissions"], INITIAL_NAVIGATION_ITEMS = ["Committees"]
-const SP_NEW_COMMITTEE = "New Committee", SP_NEW_MEMBER = "New Member", SP_NEW_PERMISSION = "New Permission"
-
+const INITIAL_TABS = ['Info', 'Permissions']
+const INITIAL_NAVIGATION_ITEMS = ['Committees']
+const SP_NEW_COMMITTEE = 'New Committee'
+const SP_NEW_MEMBER = 'New Member'
+const SP_NEW_PERMISSION = 'New Permission'
 
 function App() {
   const { api, appState } = useAragonApi()
-  const { committees, syncing } = appState
+  const { committees, isSyncing } = appState
 
   const [selectedCommittee, setSelectedCommittee] = useState(0)
   const [sidePanelOpened, setSidePanelOpened] = useState(false)
-  const [sidePanelTitle, setSidePanelTitle] = useState("New Committee")
-  const [navigationItems, setNavigationItems] = useState(INITIAL_NAVIGATION_ITEMS)
+  const [sidePanelTitle, setSidePanelTitle] = useState('New Committee')
+  const [navigationItems, setNavigationItems] = useState(
+    INITIAL_NAVIGATION_ITEMS
+  )
   const [committeeTabs, setCommitteeTabs] = useState(INITIAL_TABS)
   const [selectedTab, setSelectedTab] = useState(0)
-  
-  const  clickCommitteeHandler =  index => {
+
+  const clickCommitteeHandler = index => {
     setNavigationItems([...navigationItems, committees[index].name])
     setSelectedCommittee(index)
     setSidePanelTitle(SP_NEW_MEMBER)
   }
+
   const navigationBackHandler = () => {
     setNavigationItems(navigationItems.slice(0, -1))
     setSidePanelTitle(SP_NEW_COMMITTEE)
   }
 
-  const createCommitteeHandler = ({ name, description, tokenSymbol, votingType, votingInfo, committeeType, initialMembers }) => {
+  const createCommitteeHandler = ({
+    name,
+    description,
+    tokenSymbol,
+    votingType,
+    votingInfo,
+    committeeType,
+    initialMembers,
+  }) => {
     setSidePanelOpened(false)
-    api.createCommittee(utf8ToHex(name), description, tokenSymbol, [committeeType, votingType], initialMembers, votingInfo)
-      .subscribe(() => {
-        console.log("Create committee transaction completed!!!")
-      },(err) => {
-        console.log(err)
-      })
+    api
+      .createCommittee(
+        utf8ToHex(name),
+        description,
+        tokenSymbol,
+        [committeeType, votingType],
+        initialMembers,
+        votingInfo
+      )
+      .subscribe(
+        () => {
+          console.log('Create committee transaction completed!!!')
+        },
+        err => {
+          console.log(err)
+        }
+      )
   }
 
   const removeCommitteeHandler = () => {
-    let { address, members } = committees[selectedCommittee]
+    const { address, members } = committees[selectedCommittee]
     api.removeCommittee(address, members).subscribe(() => {
       navigationBackHandler()
     })
   }
   const addMemberHandler = memberAddress => {
-    api.addMember(committees[selectedCommittee].address, memberAddress)
+    api
+      .addMember(committees[selectedCommittee].address, memberAddress)
       .subscribe(() => {
-        console.log("Transaction completed!")
+        console.log('Transaction completed!')
       })
       setSidePanelOpened(false)
   }
@@ -82,7 +112,7 @@ function App() {
     setSelectedTab(index)
   }
 
-  let spComponent, viewComponent, panelComponent, tabsComponent = null
+  let spComponent; let viewComponent; let panelComponent; let tabsComponent = null
   let buttonName = ""
 
   //Set side panel content component
@@ -125,20 +155,24 @@ function App() {
 
     tabsComponent = (
       <TabBar
-            items={committeeTabs}
-            selected={selectedTab}
-            onChange={changeTabHandler}
+        items={committeeTabs}
+        selected={selectedTab}
+        onChange={changeTabHandler}
       />
     )
   }
 
-  //Set view component
+  // Set view component
   viewComponent = (
-    <AppView appBar={
+    <AppView
+      appBar={
       <AppBar
-        endContent={<Button mode="strong" onClick={() => setSidePanelOpened(true)}>{buttonName}
-        </Button>}
-        tabs={tabsComponent}
+          endContent={
+            <Button mode="strong" onClick={() => setSidePanelOpened(true)}>
+              {buttonName}
+            </Button>
+          }
+          tabs={tabsComponent}
       >
       <NavigationBar
         items={navigationItems}
@@ -152,7 +186,11 @@ function App() {
   return (
     <Main>
       <BaseStyles/>
-      <SidePanel title={sidePanelTitle} opened={sidePanelOpened} onClose={() => setSidePanelOpened(false)}>
+      <SidePanel
+        title={sidePanelTitle}
+        opened={sidePanelOpened}
+        onClose={() => setSidePanelOpened(false)}
+      >
         {spComponent}
       </SidePanel>
       {viewComponent}

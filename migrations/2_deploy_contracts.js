@@ -1,6 +1,6 @@
 /* global artifacts */
-var CounterApp = artifacts.require('CounterApp.sol')
+var CommitteeManager = artifacts.require('CommitteeManager.sol')
 
 module.exports = function(deployer) {
-  deployer.deploy(CounterApp)
+  deployer.deploy(CommitteeManager)
 }

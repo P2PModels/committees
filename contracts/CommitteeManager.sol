@@ -25,7 +25,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");              // finance.aragonpm.eth
     * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager");  // token-manager.aragonpm.eth
     */
-    
+
     bytes32 constant internal VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;
     bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x6b20a3010614eeebf2138ccec99f028a61c811b3b1a3343b6ff635985c75c91f;
 
@@ -168,7 +168,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         emit DeployToken(address(token));
         return token;
     }
-    
+
     function _getTokenType(uint8 _type) internal returns (bool transferable, uint256 maxAccount) {
         if (_type == 0) {
             //Membership Token Governance
@@ -218,7 +218,7 @@ contract CommitteeManager is AragonApp, BaseTemplate {
     /// State
     mapping(address => Committee) committees;
     Voting internal generalVoting;
-    
+
     /// ACL
     bytes32 constant public CREATE_COMMITTEE_ROLE = keccak256("CREATE_COMMITTEE_ROLE");
     bytes32 constant public EDIT_COMMITTEE_ROLE = keccak256("EDIT_COMMITTEE_ROLE");
@@ -235,7 +235,7 @@ contract CommitteeManager is AragonApp, BaseTemplate {
     }
 
     /**
-     * @notice Create a new committee.
+     * @notice Create a new committee called
      * @param _name Committee's name
      * @param _description Committee's description
      * @param _tokenSymbol Committee's token
@@ -243,7 +243,7 @@ contract CommitteeManager is AragonApp, BaseTemplate {
      * @param  _initialMembers Committee's initial members address.
      * @param _votingInfo It contains Voting configuration data like: approval percentage, quorum percentage and duration.
      */
-    function createCommittee(bytes32 _name, string _description, string _tokenSymbol, uint8[2] _types, 
+    function createCommittee(bytes32 _name, string _description, string _tokenSymbol, uint8[2] _types,
         address[] _initialMembers, uint64[3] _votingInfo) external auth(CREATE_COMMITTEE_ROLE) {
         address tokenManager;
         address voting;
@@ -288,7 +288,7 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         //Delete all members
         _burnTokens(TokenManager(tmAddress), _members, 1);
         delete committees[tmAddress];
-        
+
         emit RemoveCommittee(_committee);
     }
 
@@ -328,15 +328,15 @@ contract CommitteeManager is AragonApp, BaseTemplate {
      */
     function modifyCommittee(address _committee, string _description) external auth(EDIT_COMMITTEE_ROLE) {
         require(committees[_committee].tokenManagerAppAddress != address(0), "The committee doesn't exist");
-        
+
         committees[_committee].description = _description;
 
         emit ModifyCommittee(_committee, _description);
     }
 
     /**
-        It creates a new TokenManager and Voting app.
-    */ 
+     * @dev It creates a new TokenManager and Voting app for the new committee. 
+     */
     function _createCommitteeApps(string _committeeTokenSymbol, address[] _initialMembers,
         uint64[3] _votingInfo, uint8 _tokenType) internal returns (address tmAddress, address vAddress) {
         Kernel _dao = Kernel(kernel());
