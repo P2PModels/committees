@@ -1,211 +1,244 @@
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import {Form, FormField} from '../../Form'
-import { TextInput, DropDown } from '@aragon/ui'
 
-import InputList from '../../InputList/InputList';
+import { Form, FormField } from '../../Form'
+import {
+  SidePanel,
+  Text,
+  Tag,
+  TextInput,
+  DropDown,
+  isAddress,
+} from '@aragon/ui'
+
 import VotingTypeField from './VotingTypeField/VotingTypeField'
+import MembersField from '../../Form/MembersField/MembersField'
 
-import { 
-    VOTING_TYPES,
-    COMMITTEE_TYPES,
-    EMPTY_COMMITTEE,
-    getTokenSymbol, 
-    getTokenName 
-} from '../../../util'
+import {
+  VOTING_TYPES,
+  COMMITTEE_TYPES,
+  EMPTY_COMMITTEE,
+  validateMembers,
+} from '../../../lib/committee-utils'
+import { getTokenSymbol, getTokenName } from '../../../lib/token-utils'
 
-
-const INITIAL_STATE = {
-    ...EMPTY_COMMITTEE,
-    acceptance: VOTING_TYPES[0].acceptance,
-    support: VOTING_TYPES[0].support,
-    duration: VOTING_TYPES[0].duration,
-    initialMembers: [],
-    error: {},
-    selectedVoting: 0,
-    disabled: true,
+function transformMembers(members, tokenUnique) {
+  const addresses = []
+  const stakes = []
+  members.forEach(m => {
+    if (isAddress[m[0]] && tokenUnique) addresses.push(m[0])
+    else if (isAddress[m[0]] && m[1] > 0) {
+      addresses.push(m[0])
+      stakes.stakes.push(m[1])
+    }
+  })
+  // if (tokenUnique) stakes = [1]
+  return [addresses, stakes]
 }
 
-class NewCommitteePanel extends React.Component {
-    static propTypes = {
-        onCreateCommittee: PropTypes.func.isRequired,
+function validateVotingParams(support, acceptance, duration) {
+  const votingErrors = []
+  if (isNaN(support) || support < 1 || support >= 100)
+    votingErrors.push('Support must be a value between 1 and 99')
+
+  if (
+    isNaN(acceptance) ||
+    acceptance < 1 ||
+    acceptance > support ||
+    acceptance >= 100
+  ) {
+    votingErrors.push(
+      'Acceptance must be greater than 1 and less than support value'
+    )
+  }
+
+  if (isNaN(duration) || duration < 1 || duration > 360) {
+    votingErrors.push('Duration must be greater than 1 and less than 360')
+  }
+
+  return votingErrors
+}
+const NewCommitteePanel = React.memo(({ panelState, onCreateCommittee }) => {
+  return (
+    <SidePanel
+      title="New Committeee"
+      opened={panelState.opened}
+      onClose={panelState.onClose}
+    >
+      <NewCommitteePanelContent onCreateCommittee={onCreateCommittee} />
+    </SidePanel>
+  )
+})
+
+const NewCommitteePanelContent = ({ onCreateCommittee }) => {
+  console.log('Rendering New Committee Panel...')
+  const [error, setError] = useState({})
+  const [committee, setCommittee] = useState({ ...EMPTY_COMMITTEE })
+  const [votingTypes, setVotingTypes] = useState([...VOTING_TYPES])
+  const [votingTypeIndex, setVotingTypeIndex] = useState(0)
+
+  const changeField = ({ target: { name, value } }) => {
+    setCommittee(committee => {
+      return { ...committee, [name]: value }
+    })
+  }
+
+  const changeTokenType = index => {
+    setVotingTypeIndex(index)
+    setCommittee(committee => {
+      return { ...committee, selectedToken: index }
+    })
+  }
+
+  const changeVotingType = (votingParams, isCustom) => {
+    if (isCustom)
+      setVotingTypes(votingTypes => {
+        const types = [...votingTypes]
+        types[types.length - 1] = votingParams
+        return types
+      })
+    setCommittee(committee => {
+      return { ...committee, votingParams }
+    })
+  }
+
+  const clearPanel = useCallback(() => {
+    setError({})
+    setCommittee({ ...EMPTY_COMMITTEE })
+    setVotingTypes([...VOTING_TYPES])
+    setVotingTypeIndex(0)
+  }, [])
+
+  const changeMembers = members => {
+    setCommittee(committee => {
+      return { ...committee, members }
+    })
+  }
+
+  const handleSubmit = () => {
+    const { name, description, tokenParams, votingParams, members } = committee
+    const { support, acceptance, duration } = votingParams
+    const error = {}
+    let errorMsg
+
+    if (!name) {
+      error.name = 'Please provide a name'
     }
-    state = INITIAL_STATE
-
-    calculateTokenSymbol(committeeName) {
-        let symbol = ""
-        committeeName.split(" ").forEach(word => {
-            symbol += word.charAt(0).toUpperCase()
-        })
-
-        return symbol + 'T'
-    }
-    changeField = ({ target: { name, value } }) => {
-        this.setState({
-            [name]: value,
-        })
+    if (!description) {
+      error.description = 'Please provide a description'
     }
 
-    changeInitialMembers = initialMembers => {
-        this.setState({
-            initialMembers,
-            error: {...this.state.error, initialMembers: ""}
-        })
+    errorMsg = validateVotingParams(support, acceptance, duration)
+    if (errorMsg && errorMsg.length) error.votingType = errorMsg
 
+    errorMsg = validateMembers(members, isAddress)
+    if (errorMsg) error.members = errorMsg
+
+    if (Object.keys(error).length) {
+      setError({ ...error })
+    } else {
+      clearPanel()
+      const tokenUnique = COMMITTEE_TYPES[committee.selectedToken].unique
+      const [addresses, stakes] = transformMembers(members, tokenUnique)
+
+      onCreateCommittee({
+        name,
+        description,
+        votingParams,
+        tokenParams,
+        tokenSymbol: getTokenSymbol(name, true),
+        addresses,
+        stakes,
+      })
     }
+  }
 
-    changeCommitteeType = type => {
-        this.setState({
-            committeeType: type,
-        })
-    }
-
-    changeVotingTypeHandler = (support, acceptance, duration, index) => {
-        let disabled = index < VOTING_TYPES.length - 1
-        if(index == VOTING_TYPES.length - 1) {
-                this.setState({
-                    votingType: index,
-                    support,
-                    acceptance,
-                    duration,
-                    disabled,
-                })
+  const tokenTypes = COMMITTEE_TYPES.map(c => {
+    return (
+      <Text>
+        {c.name + ' '}
+        {c.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
+        {c.unique ? <Tag uppercase={false}>No cumulative</Tag> : null}
+      </Text>
+    )
+  })
+  return (
+    <Form onSubmit={handleSubmit} submitText="Create Committee">
+      <FormField
+        required
+        label="Name"
+        err={error && error.name}
+        input={
+          <TextInput
+            name="name"
+            onChange={changeField}
+            value={committee.name}
+            wide
+          />
         }
-        else {
-            this.setState({
-                votingType: index,
-                support: VOTING_TYPES[index].support,
-                acceptance: VOTING_TYPES[index].acceptance,
-                duration: VOTING_TYPES[index].duration,
-                disabled,
-            })
+      />
+      <FormField
+        required
+        label="Description"
+        err={error && error.description}
+        input={
+          <TextInput
+            name="description"
+            onChange={changeField}
+            value={committee.description}
+            wide
+          />
         }
-    }
-
-    handleSubmit = () => {
-        const { name, description, committeeType, votingType,
-            initialMembers, support, acceptance, duration} = this.state
-        let sup = parseInt(support), accep= parseInt(acceptance), dur = parseInt(duration)
-        const error = {}
-        let initialMembersError = this.state.error.initialMembers
-
-        if (!name) {
-            error.name = 'Please provide a committee name'
+      />
+      <FormField
+        required
+        label="Token Type"
+        input={
+          <DropDown
+            wide
+            name="selectedToken"
+            items={tokenTypes}
+            selected={committee.selectedToken}
+            onChange={changeTokenType}
+          />
         }
-        if(!description) {
-            error.description = "Please provide a committee description"
+      />
+      <FormField
+        required
+        label="Voting Type"
+        err={error && error.votingType}
+        input={
+          <VotingTypeField
+            votingTypes={votingTypes}
+            selectedVoting={votingTypeIndex}
+            onChange={changeVotingType}
+          />
         }
-
-        if(isNaN(sup) || sup < 1 || sup >= 100) 
-            error.votingType = ["Support must be a value between 1 and 99"]
-
-        if(isNaN(accep) || accep < 1 || accep > sup || accep >= 100) {
-            let err = "Acceptance must be greater than 1 and less than support value"
-            if(error.votingType && error.votingType.length > 0)
-                error.votingType = [...error.votingType, err]
-            else
-                error.votingType = [err]
+      />
+      <FormField
+        required
+        label="Initial Members"
+        err={error && error.members}
+        input={
+          <MembersField
+            accountStake={
+              COMMITTEE_TYPES[committee.selectedToken].unique ? 1 : -1
+            }
+            members={committee.members}
+            onChange={changeMembers}
+          />
         }
+      />
+    </Form>
+  )
+}
 
-        if(isNaN(dur) || dur < 1 || dur > 360) {
-            let err = "Duration must be greater than 1 and less than 360"
-            if(error.votingType && error.votingType.length > 0)
-                error.votingType = [...error.votingType, err]
-            else
-                error.votingType = [err]
-        }
+NewCommitteePanelContent.propTypes = {
+  onCreateCommittee: PropTypes.func,
+}
 
-        if (Object.keys(error).length) {
-            if(initialMembersError)
-                this.setState({ error: {...error, initialMembers: initialMembersError}})
-            else
-            this.setState({ error: {...error,} })
-        } else {
-            this.setState(INITIAL_STATE)
-            let symbol = getTokenSymbol(name, true)
-
-            this.props.onCreateCommittee({ 
-                name, 
-                description, 
-                committeeType, 
-                votingType,
-                votingInfo: [sup, accep, dur],
-                tokenSymbol: symbol,
-                tokenName: getTokenName(symbol),
-                initialMembers})
-        }
-    }
-
-    addedAddressHandler = errMsg => {
-        this.setState({error: {...this.state.error, initialMembers: errMsg}, })        
-    }
-
-    render() {
-        const {name, description, committeeType, votingType,
-            initialMembers, error, } = this.state
-        const { support, acceptance, duration, disabled } = this.state
-        const { handleSubmit, changeField, changeCommitteeType, changeVotingTypeHandler} = this
-        
-        return (
-            <Form onSubmit={handleSubmit} submitText="Create Committee">
-                <FormField
-                    required
-                    label="Name"
-                    err={error && error.name}
-                    input={
-                        <TextInput name="name" onChange={changeField} value={name} wide/>
-                    }
-                />
-                <FormField
-                    required
-                    label="Description"
-                    err={error && error.description}
-                    input={
-                        <TextInput name="description" onChange={changeField} value={description} wide/>
-                    }
-                />
-                <FormField 
-                    label="Committee Type"
-                    input={
-                        <DropDown wide
-                            name="committeeType"
-                            items={COMMITTEE_TYPES}
-                            active={committeeType}
-                            onChange={changeCommitteeType}
-                        />
-                    }
-                />
-                <FormField 
-                    label="Voting Type"
-                    err={error && error.votingType}
-                    input={
-                        <VotingTypeField
-                            votingTypes={VOTING_TYPES}
-                            support={support}
-                            acceptance={acceptance}
-                            duration={duration}
-                            selectedVoting={votingType}
-                            onChangeVotingType={changeVotingTypeHandler}
-                            onChangeInputField={changeField}
-                            disabled={disabled}
-                        />
-                    }
-                />
-                <FormField 
-                    label="Initial Members"
-                    err={error && error.initialMembers}
-                    input={
-                        <InputList 
-                            onChangeInitialMember={this.changeInitialMembers} 
-                            onAddAddress={message => this.setState({error: {...error, initialMembers: message}})} 
-                            inputName="initialMembers"
-                            inputPlaceholder="Add a member address..."
-                        />
-                    }
-                />
-            </Form>
-        )
-    }
+NewCommitteePanelContent.propTypes = {
+  onCreateCommittee: () => {},
 }
 
 export default NewCommitteePanel

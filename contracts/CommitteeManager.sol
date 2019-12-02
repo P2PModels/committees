@@ -17,7 +17,7 @@ import "@aragon/os/contracts/common/IsContract.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 
-contract BaseTemplate is APMNamehash, IsContract {
+contract CommitteeHelper is APMNamehash, IsContract {
     /* Hardcoded constant to save gas
     * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                  // agent.aragonpm.eth
     * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                  // vault.aragonpm.eth
@@ -68,13 +68,11 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* TOKEN MANAGER */
 
-    function _installTokenManagerApp(Kernel _dao, MiniMeToken _token, uint8 _tokenType) internal returns (TokenManager) {
-        bool transferable;
-        uint256 maxAccountTokens;
+    function _installTokenManagerApp(Kernel _dao, MiniMeToken _token, bool[2] _tokenParams) internal returns (TokenManager) {
+
         TokenManager tokenManager = TokenManager(_installNonDefaultApp(_dao, TOKEN_MANAGER_APP_ID));
         _token.changeController(tokenManager);
-        (transferable, maxAccountTokens) = _getTokenType(_tokenType);
-        tokenManager.initialize(_token, transferable, maxAccountTokens);
+        tokenManager.initialize(_token, _tokenParams[0], _tokenParams[1] ? 1 : 0);
         return tokenManager;
     }
 
@@ -162,41 +160,21 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* TOKEN */
 
     function _createToken(string _name, string _symbol, uint8 _decimals) internal returns (MiniMeToken) {
-        // require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
+        require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
 
         MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, _decimals, _symbol, true);
         emit DeployToken(address(token));
         return token;
     }
-
-    function _getTokenType(uint8 _type) internal returns (bool transferable, uint256 maxAccount) {
-        if (_type == 0) {
-            //Membership Token Governance
-            transferable = false;
-            maxAccount = 1;
-        } else if (_type == 1) {
-            //Reputation Token Governance
-            transferable = false;
-            maxAccount = 0;
-        } else if (_type == 2) {
-            //Equity Token Governance
-            transferable = true;
-            maxAccount = 0;
-        } else {
-            transferable = false;
-            maxAccount = 1;
-        }
-    }
-
 }
 
 
-contract CommitteeManager is AragonApp, BaseTemplate {
+contract CommitteeManager is AragonApp, CommitteeHelper {
     using SafeMath for uint256;
 
     /// Events
     event CreateCommittee(address indexed committeeAddress, bytes32 name, string description,
-    uint8 votingType, uint8 committeeType, string tokenSymbol, address[] initialMembers, uint64[3] votingInfo);
+    bool[2] tokenParams, string tokenSymbol, address[] initialMembers, uint64[3] votingInfo);
     event RemoveCommittee(address indexed committeeAddress);
     event AddMember(address indexed committeeAddress, address member);
     event RemoveMember(address indexed committeeAddress, address member);
@@ -210,9 +188,6 @@ contract CommitteeManager is AragonApp, BaseTemplate {
         string description;
         address tokenManagerAppAddress;
         address votingAppAddress;
-        uint8 votingType;
-        uint8 committeeType;
-
     }
 
     /// State
@@ -236,21 +211,31 @@ contract CommitteeManager is AragonApp, BaseTemplate {
 
     /**
      * @notice Create a new committee called
-     * @param _name Committee's name
-     * @param _description Committee's description
-     * @param _tokenSymbol Committee's token
-     * @param _types Committee type and Voting app type.
+     * @param _name Committee's name 0: committee name 1: tokensymbol
+     * @param _description Committee's info data. 0 -> description, 1 -> tokenSymbol
+     * @param _tokenSymbol Committees token symbol.
+     * @param _tokenParams Token properties. First position transferable. Second unique
      * @param  _initialMembers Committee's initial members address.
-     * @param _votingInfo It contains Voting configuration data like: approval percentage, quorum percentage and duration.
+     * @param _votingParams It contains Voting configuration data like: approval percentage, quorum percentage and duration.
      */
-    function createCommittee(bytes32 _name, string _description, string _tokenSymbol, uint8[2] _types,
-        address[] _initialMembers, uint64[3] _votingInfo) external auth(CREATE_COMMITTEE_ROLE) {
-        address tokenManager;
-        address voting;
-        (tokenManager, voting) = _createCommitteeApps(_tokenSymbol, _initialMembers, _votingInfo, _types[0]);
+    function createCommittee(
+        bytes32 _name,
+        string _description,
+        string _tokenSymbol,
+        bool[2] _tokenParams,
+        address[] _initialMembers,
+        uint256[] _stakes,
+        uint64[3] _votingParams
+    )
+    external auth(CREATE_COMMITTEE_ROLE)
+    {
+        address[2] memory apps; // 0: token manager; 1: voting
+        // address tokenManager;
+        // address voting;
+        apps = _createCommitteeApps(_tokenSymbol, _initialMembers, _votingParams, _tokenParams, _stakes);
 
-        committees[tokenManager] = Committee(_name, _description, tokenManager, voting, _types[1], _types[0]);
-        emit CreateCommittee(tokenManager, _name, _description, _types[1], _types[0], _tokenSymbol, _initialMembers, _votingInfo);
+        committees[apps[0]] = Committee(_name, _description, apps[0], apps[1]);
+        emit CreateCommittee(apps[0], _name, _description, _tokenParams, _tokenSymbol, _initialMembers, _votingParams);
     }
 
     /**
@@ -337,23 +322,32 @@ contract CommitteeManager is AragonApp, BaseTemplate {
     /**
      * @dev It creates a new TokenManager and Voting app for the new committee. 
      */
-    function _createCommitteeApps(string _committeeTokenSymbol, address[] _initialMembers,
-        uint64[3] _votingInfo, uint8 _tokenType) internal returns (address tmAddress, address vAddress) {
+    function _createCommitteeApps(
+        string _committeeTokenSymbol,
+        address[] _initialMembers,
+        uint64[3] _votingInfo,
+        bool[2] _tokenParams,
+        uint256[] _stakes
+    )
+    internal returns (address[2] memory apps)
+    {
         Kernel _dao = Kernel(kernel());
         ACL acl = ACL(_dao.acl());
-
         MiniMeToken token = _createToken(string(abi.encodePacked(_committeeTokenSymbol, " Token")), _committeeTokenSymbol, 0);
-        TokenManager tokenManager = _installTokenManagerApp(_dao, token, _tokenType);
+        TokenManager tokenManager = _installTokenManagerApp(_dao, token, _tokenParams);
         _createTokenManagerPermissions(acl, tokenManager, this, this);
         _grantTokenManagerPermissions(acl, tokenManager, generalVoting);
-        _mintTokens(acl, tokenManager, _initialMembers, 1);
-
+        //TO DO add stakes variable as parameter
+        if (_tokenParams[1])
+            _mintTokens(acl, tokenManager, _initialMembers, 1);
+        else
+            _mintTokens(acl, tokenManager, _initialMembers, _stakes);
         Voting voting = _installVotingApp(_dao, token, _votingInfo[0] * PCT, _votingInfo[1] * PCT, _votingInfo[2] * 1 days);
         //Only token holders can open a vote.
         _createVotingPermissions(acl, voting, generalVoting, generalVoting);
         _changeTokenManagerPermissionManager(acl, tokenManager, generalVoting);
 
-        tmAddress = address(tokenManager);
-        vAddress = address(voting);
+        apps[0] = address(tokenManager);
+        apps[1] = address(voting);
     }
 }

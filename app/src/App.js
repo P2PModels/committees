@@ -1,200 +1,229 @@
 import React, { useState } from 'react'
+import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
 import {
   Main,
   Button,
-  AppBar,
-  AppView,
   BaseStyles,
-  SidePanel,
-  NavigationBar,
-  TabBar,
+  Header,
+  useTheme,
+  textStyle,
 } from '@aragon/ui'
 
+import NoCommittees from './screens/NoCommittees'
 import NewCommitteePanel from './components/SidePanels/NewCommittee/NewCommitteePanel'
-import NewMemberPanel from './components/SidePanels/NewMember/NewMemberPanel'
-import ListPanel from './components/ViewPanels/ListPanel/ListPanel'
-import CommitteePanel from './components/ViewPanels/CommitteePanel/CommitteePanel'
-
-import styled from 'styled-components'
 
 import { utf8ToHex } from 'web3-utils'
 
-import { EMPTY_COMMITTEE } from '../src/util'
-
-const INITIAL_TABS = ['Info', 'Permissions']
-const INITIAL_NAVIGATION_ITEMS = ['Committees']
-const SP_NEW_COMMITTEE = 'New Committee'
-const SP_NEW_MEMBER = 'New Member'
-const SP_NEW_PERMISSION = 'New Permission'
+// import { EMPTY_COMMITTEE, testCommittee } from './lib/committee-utils'
+import Committees from './screens/Committees'
+import CommitteeDetails from './screens/CommitteeDetails'
+import NewMembersPanel from './components/SidePanels/NewMemberPanel'
 
 function App() {
+  const theme = useTheme()
   const { api, appState } = useAragonApi()
   const { committees, isSyncing } = appState
 
-  const [selectedCommittee, setSelectedCommittee] = useState(0)
+  const [selectedCommittee, setSelectedCommittee] = useState(null)
   const [sidePanelOpened, setSidePanelOpened] = useState(false)
-  const [sidePanelTitle, setSidePanelTitle] = useState('New Committee')
-  const [navigationItems, setNavigationItems] = useState(
-    INITIAL_NAVIGATION_ITEMS
-  )
-  const [committeeTabs, setCommitteeTabs] = useState(INITIAL_TABS)
-  const [selectedTab, setSelectedTab] = useState(0)
 
-  const clickCommitteeHandler = index => {
-    setNavigationItems([...navigationItems, committees[index].name])
-    setSelectedCommittee(index)
-    setSidePanelTitle(SP_NEW_MEMBER)
+  const [screenName, setScreenName] = useState('committees')
+
+  const ScreenAction = () => {
+    switch (screenName) {
+      case 'committees':
+        return (
+          <Button
+            mode="strong"
+            onClick={() => setSidePanelOpened(true)}
+            label="New Committee"
+          />
+        )
+      case 'info':
+        return (
+          <Button
+            mode="strong"
+            onClick={() => setSidePanelOpened(true)}
+            label="New Member"
+          />
+        )
+      case 'permissions':
+        return (
+          <Button
+            mode="strong"
+            onClick={() => setSidePanelOpened(true)}
+            label="New Permission"
+          />
+        )
+      default:
+        return null
+    }
   }
 
-  const navigationBackHandler = () => {
-    setNavigationItems(navigationItems.slice(0, -1))
-    setSidePanelTitle(SP_NEW_COMMITTEE)
+  const SidePanelScreen = () => {
+    switch (screenName) {
+      case 'committees':
+        return (
+          <NewCommitteePanel
+            panelState={{
+              opened: sidePanelOpened,
+              onClose: () => setSidePanelOpened(false),
+            }}
+            onCreateCommittee={createCommitteeHandler}
+          />
+        )
+      case 'info':
+        return (
+          <NewMembersPanel
+            panelState={{
+              opened: sidePanelOpened,
+              onClose: () => setSidePanelOpened(false),
+            }}
+            onCreateMember={createMembersHandler}
+            isCumulative={
+              selectedCommittee ? selectedCommittee.tokenParams.unique : false
+            }
+          />
+        )
+      default:
+        return null
+    }
   }
+  // const clickCommitteeHandler = index => {
+  //   setNavigationItems([...navigationItems, committees[index].name])
+  //   setSelectedCommittee(index)
+  //   setSidePanelTitle(SP_NEW_MEMBER)
+  // }
 
   const createCommitteeHandler = ({
     name,
     description,
+    votingParams,
+    tokenParams,
     tokenSymbol,
-    votingType,
-    votingInfo,
-    committeeType,
-    initialMembers,
+    addresses,
+    stakes,
   }) => {
     setSidePanelOpened(false)
-    api
-      .createCommittee(
-        utf8ToHex(name),
-        description,
-        tokenSymbol,
-        [committeeType, votingType],
-        initialMembers,
-        votingInfo
-      )
-      .subscribe(
-        () => {
-          console.log('Create committee transaction completed!!!')
-        },
-        err => {
-          console.log(err)
-        }
-      )
+    // api
+    //   .createCommittee(
+    //     utf8ToHex(name),
+    //     description,
+    //     tokenSymbol,
+    //     [tokenParams.transferable, tokenParams.unique],
+    //     members,
+    //     [0],
+    //     votingParams
+    //   )
+    //   .subscribe(
+    //     () => {
+    //       console.log('Create committee transaction completed!!!')
+    //     },
+    //     err => {
+    //       console.log(err)
+    //     }
+    //   )
   }
 
-  const removeCommitteeHandler = () => {
-    const { address, members } = committees[selectedCommittee]
-    api.removeCommittee(address, members).subscribe(() => {
-      navigationBackHandler()
-    })
-  }
-  const addMemberHandler = memberAddress => {
-    api
+  const createMembersHandler = members => {
+    console.log(members)
+    /* api
       .addMember(committees[selectedCommittee].address, memberAddress)
       .subscribe(() => {
         console.log('Transaction completed!')
-      })
-      setSidePanelOpened(false)
+      }) */
+    setSidePanelOpened(false)
   }
+
   const removeMemberHandler = memberAddress => {
     setSidePanelOpened(false)
-    api.removeMember(committees[selectedCommittee].address, memberAddress)
+    api
+      .removeMember(committees[selectedCommittee].address, memberAddress)
       .subscribe(() => {
-        console.log("Transaction completed!")
+        console.log('Transaction completed!')
       })
   }
-
-  const changeTabHandler = index => {
-    if(committeeTabs[index].toLowerCase() === "permissions")
-      setSidePanelTitle(SP_NEW_PERMISSION)
-    else if(committeeTabs[index].toLowerCase() === "info")
-      setSidePanelTitle(SP_NEW_MEMBER)
-      
-    setSelectedTab(index)
+  const clickCommitteeHandler = committee => {
+    setSelectedCommittee(committee)
+    setScreenName('info')
   }
 
-  let spComponent; let viewComponent; let panelComponent; let tabsComponent = null
-  let buttonName = ""
-
-  //Set side panel content component
-  if(sidePanelTitle === SP_NEW_COMMITTEE) {
-      spComponent = (
-        <NewCommitteePanel onCreateCommittee={createCommitteeHandler} />
-
-      )
-      buttonName = "New Committee"
-  }
-  else if(sidePanelTitle === SP_NEW_MEMBER) {
-      spComponent = (
-        <NewMemberPanel addMemberHandler={addMemberHandler}/>
-      )
-      buttonName = "Add Member"
-  }
-  else if(sidePanelTitle === SP_NEW_PERMISSION) {
-    spComponent = (
-      <NewMemberPanel addMemberHandler={addMemberHandler}/>
-      )
-      buttonName = 'New Permission'
+  const backHandler = () => {
+    setSelectedCommittee(null)
+    setScreenName('committees')
   }
 
-  //set view content component
-  let selectedNavigation = navigationItems[navigationItems.length - 1].toLowerCase()
-  if(selectedNavigation === 'committees') {
-    panelComponent = (
-      <ListPanel items={committees}  itemType="committees" clickItemHandler={clickCommitteeHandler} noItemsMessage="There are no committees"/>
-    )
-  }
-  else {
-    let selectedTabName = committeeTabs[selectedTab].toLowerCase()
-    if(selectedTabName === "info")
-      panelComponent = (
-        <CommitteePanel
-          committee={committees && committees[selectedCommittee] ? committees[selectedCommittee] : EMPTY_COMMITTEE} 
-          onRemoveMember={removeMemberHandler} onRemoveCommittee={removeCommitteeHandler}
-        />
-      )
-
-    tabsComponent = (
-      <TabBar
-        items={committeeTabs}
-        selected={selectedTab}
-        onChange={changeTabHandler}
-      />
-    )
+  const changeTabHandler = tabName => {
+    setScreenName(tabName.toLowerCase())
   }
 
-  // Set view component
-  viewComponent = (
-    <AppView
-      appBar={
-      <AppBar
-          endContent={
-            <Button mode="strong" onClick={() => setSidePanelOpened(true)}>
-              {buttonName}
-            </Button>
-          }
-          tabs={tabsComponent}
-      >
-      <NavigationBar
-        items={navigationItems}
-        onBack={navigationBackHandler} 
-      />
-      </AppBar>
-    }>
-      {panelComponent}
-    </AppView>
-  )
   return (
-    <Main>
-      <BaseStyles/>
-      <SidePanel
-        title={sidePanelTitle}
-        opened={sidePanelOpened}
-        onClose={() => setSidePanelOpened(false)}
-      >
-        {spComponent}
-      </SidePanel>
-      {viewComponent}
-    </Main>
+    <React.Fragment>
+      <BaseStyles />
+      {committees && committees.length === 0 && (
+        <div
+          css={`
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          `}
+        >
+          <NoCommittees
+            onNewCommittee={() => {
+              setSidePanelOpened(true)
+            }}
+            isSyncing={false}
+          />
+        </div>
+      )}
+      {committees && committees.length > 0 && (
+        <React.Fragment>
+          <Header
+            primary={
+              <React.Fragment>
+                <span
+                  css={`
+                    ${textStyle('title2')}
+                  `}
+                >
+                  Committees{selectedCommittee ? ':' : ''}
+                </span>
+                {selectedCommittee ? (
+                  <span
+                    css={`
+                      margin-left: 7px;
+                      position: relative;
+                      top: 1px;
+                      color: ${theme.surfaceContentSecondary};
+                      font-weight: bold;
+                      ${textStyle('title3')}
+                    `}
+                  >
+                    {selectedCommittee.name}
+                  </span>
+                ) : null}
+              </React.Fragment>
+            }
+            secondary={<ScreenAction />}
+          />
+          {selectedCommittee ? (
+            <CommitteeDetails
+              committee={selectedCommittee}
+              onBack={backHandler}
+              onChangeTab={changeTabHandler}
+            />
+          ) : (
+            <Committees
+              committees={committees}
+              onClickCommittee={clickCommitteeHandler}
+            />
+          )}
+        </React.Fragment>
+      )}
+      <SidePanelScreen />
+    </React.Fragment>
   )
 }
 
@@ -204,4 +233,10 @@ const Syncing = styled.div.attrs({ children: 'Syncing…' })`
   right: 20px;
 `
 
-export default App
+export default () => {
+  return (
+    <Main>
+      <App />
+    </Main>
+  )
+}

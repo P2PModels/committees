@@ -3,66 +3,84 @@ import 'regenerator-runtime/runtime'
 // import { of } from 'rxjs'
 // import AragonApi from '@aragon/api'
 import Aragon, { events } from '@aragon/api'
-import { hexToUtf8 } from 'web3-utils';
+import { hexToUtf8 } from 'web3-utils'
 
+import tokenManagerAbi from './abi/TokenManager.json'
 
-import { getTokenName, updateCommitteesMembers, deleteCommittee } from '../src/util/'
+import {
+  updateCommitteesMembers,
+  deleteCommittee,
+  testCommittee,
+  testCommittee1,
+  testCommittee2,
+} from '../src/lib/committee-utils'
 
-// const INITIALIZATION_TRIGGER = Symbol('INITIALIZATION_TRIGGER')
-
-// const api = new AragonApi()
+import { getTokenName } from '../src/lib/token-utils'
 
 const INITIAL_STATE = {
-  committees: [],
+  committees: [testCommittee, testCommittee1, testCommittee2],
+  isSyncing: false,
 }
 
 const app = new Aragon()
 
-app.store(
-  async (state, { event, returnValues }) => {
-    console.log(state, event, returnValues);
-    let nextState = { ...state }
-    
-    if(state == null)
-      nextState = INITIAL_STATE
+app.store(async (state, { event, returnValues }) => {
+  console.log(state, event, returnValues)
+  let nextState = { ...state }
 
-    switch (event) {
-      case 'CreateCommittee':
-        let { committeeAddress: address, name, description, initialMembers, committeeType, votingType, tokenSymbol} = returnValues
-        nextState = {
-          ...state,
-          committees: [ ...state.committees, 
-            {
-              name: hexToUtf8(name), 
-              description,
-              address,
-              committeeType,
-              votingType,
-              tokenSymbol,
-              tokenName: getTokenName(tokenSymbol),
-              members: initialMembers
-            }
-          ]
-        }
-        break
-      case 'RemoveCommittee':
-          nextState = {
-            ...state,
-            committees: deleteCommittee(state.committees, returnValues.committeeAddress)
-          }
-          break
-      case 'RemoveMember':
-      case 'AddMember':
-        let  { member } = returnValues
-        nextState = {
-          ...state,
-          committees: updateCommitteesMembers(state.committees, returnValues.committeeAddress, member, event === 'AddMember')
-        }
-        break
-      
-    }
+  if (state == null) nextState = INITIAL_STATE
 
-    return nextState
-    
+  switch (event) {
+    case 'CreateCommittee':
+      const {
+        committeeAddress: address,
+        name,
+        description,
+        initialMembers,
+        committeeType,
+        votingType,
+        tokenSymbol,
+      } = returnValues
+      nextState = {
+        ...state,
+        committees: [
+          ...state.committees,
+          {
+            name: hexToUtf8(name),
+            description,
+            address,
+            committeeType,
+            votingType,
+            tokenSymbol,
+            tokenName: getTokenName(tokenSymbol),
+            members: initialMembers,
+          },
+        ],
+      }
+      break
+    case 'RemoveCommittee':
+      nextState = {
+        ...state,
+        committees: deleteCommittee(
+          state.committees,
+          returnValues.committeeAddress
+        ),
+      }
+      break
+    case 'RemoveMember':
+    case 'AddMember':
+      const { member } = returnValues
+      nextState = {
+        ...state,
+        committees: updateCommitteesMembers(
+          state.committees,
+          returnValues.committeeAddress,
+          member,
+          event === 'AddMember'
+        ),
+      }
+      break
   }
-)
+
+  return nextState
+})
