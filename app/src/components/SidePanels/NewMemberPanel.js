@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 
-import { SidePanel } from '@aragon/ui'
+import { SidePanel, useSidePanelFocusOnReady } from '@aragon/ui'
 
 import { Form, FormField } from '../Form'
 import MembersField from '../Form/MembersField/MembersField'
@@ -29,6 +29,8 @@ const NewMembersPanel = React.memo(
 const NewMembersPanelContent = ({ onCreateMember, isCumulative }) => {
   const [error, setError] = useState({})
   const [members, setMembers] = useState([EMPTY_MEMBER])
+
+  const inputRef = useSidePanelFocusOnReady()
 
   const clearPanel = useCallback(() => {
     setError({})
@@ -58,6 +60,7 @@ const NewMembersPanelContent = ({ onCreateMember, isCumulative }) => {
         err={error && error.members}
         input={
           <MembersField
+            ref={inputRef}
             accountStake={isCumulative ? 1 : -1}
             members={members}
             onChange={changeMembers}

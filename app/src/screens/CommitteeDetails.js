@@ -19,50 +19,62 @@ const tabs = [
   { name: 'Activity', body: 'CommitteeActivity' },
 ]
 
-const CommitteeDetails = ({ committee, onBack, onChangeTab }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0)
+const CommitteeDetails = React.memo(
+  ({ committee, onBack, onChangeTab }) => {
+    console.log('CommitteeDetails rerendering')
+    const [activeTabIndex, setActiveTabIndex] = useState(0)
 
-  const tabChangeHandler = index => {
-    onChangeTab(tabs[index].name)
-    setActiveTabIndex(index)
-  }
+    const tabChangeHandler = useCallback(
+      index => {
+        onChangeTab(tabs[index].name)
+        setActiveTabIndex(index)
+      },
+      [tabs]
+    )
 
-  const deleteCommitteeHandler = useCallback(address => {
-    console.log('Deleting committee with address ' + address)
-  })
+    const deleteCommitteeHandler = useCallback(address => {
+      console.log('Deleting committee with address ' + address)
+    })
 
-  const ScreenTab = ({ screenName }) => {
-    switch (screenName.toLowerCase()) {
-      case 'info':
-        return <CommitteeInfo committee={committee} />
-      case 'permissions':
-        return <div>We're are working on it</div>
-      case 'activity':
-        return <div>We're are working on activity too</div>
-      default:
-        return null
+    const ScreenTab = ({ screenName }) => {
+      switch (screenName.toLowerCase()) {
+        case 'info':
+          return <CommitteeInfo committee={committee} />
+        case 'permissions':
+          return <div>We're are working on it</div>
+        case 'activity':
+          return <div>We're are working on activity too</div>
+        default:
+          return null
+      }
     }
+    return (
+      <React.Fragment>
+        <Bar
+          primary={<BackButton onClick={onBack} />}
+          secondary={
+            <CommitteeMenu
+              address={committee.address}
+              onRemoveCommittee={deleteCommitteeHandler}
+            />
+          }
+        />
+        <Tabs
+          items={tabs.map(t => t.name)}
+          selected={activeTabIndex}
+          onChange={tabChangeHandler}
+        />
+        <ScreenTab screenName={tabs[activeTabIndex].name} />
+      </React.Fragment>
+    )
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.committee.address === nextProps.committee.address &&
+      prevProps.committee.members.length === nextProps.committee.members.length
+    )
   }
-  return (
-    <React.Fragment>
-      <Bar
-        primary={<BackButton onClick={onBack} />}
-        secondary={
-          <CommitteeMenu
-            address={committee.address}
-            onRemoveCommittee={deleteCommitteeHandler}
-          />
-        }
-      />
-      <Tabs
-        items={tabs.map(t => t.name)}
-        selected={activeTabIndex}
-        onChange={tabChangeHandler}
-      />
-      <ScreenTab screenName={tabs[activeTabIndex].name} />
-    </React.Fragment>
-  )
-}
+)
 
 const CommitteeMenu = ({ address, onRemoveCommittee }) => {
   const theme = useTheme()
