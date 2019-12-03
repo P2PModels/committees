@@ -30,13 +30,13 @@ app.store(async (state, { event, returnValues }) => {
     case 'CreateCommittee':
       const {
         committeeAddress: address,
+        votingAddress,
         name,
         description,
         initialMembers,
         stakes,
         tokenParams,
         votingParams,
-        tokenSymbol,
       } = returnValues
       nextState = {
         ...state,
@@ -46,10 +46,11 @@ app.store(async (state, { event, returnValues }) => {
             name: hexToUtf8(name),
             description,
             address,
+            votingAddress,
             tokenType: getTokenType(tokenParams),
             votingType: getVotingType(votingParams),
-            tokenSymbol,
-            tokenName: getTokenName(tokenSymbol),
+            tokenSymbol: 'TODO',
+            tokenName: getTokenName('TODO'),
             members: initialMembers.map((member, i) => [member, stakes[i]]),
           },
         ],

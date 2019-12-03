@@ -12,6 +12,7 @@ import {
 } from '@aragon/ui'
 
 import CommitteeInfo from './CommitteeInfo'
+import CommitteeActivity from './CommitteeActivity'
 
 const tabs = [
   { name: 'Info', body: 'CommitteeInfo' },
@@ -43,7 +44,7 @@ const CommitteeDetails = React.memo(
         case 'permissions':
           return <div>We're are working on it</div>
         case 'activity':
-          return <div>We're are working on activity too</div>
+          return <CommitteeActivity committee={committee} />
         default:
           return null
       }

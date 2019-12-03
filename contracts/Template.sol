@@ -189,6 +189,9 @@ contract Template is TemplateBase {
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
 
+        acl.revokePermission(this, tokenManager, tokenManager.MINT_ROLE());
+        acl.setPermissionManager(voting, tokenManager, tokenManager.MINT_ROLE());
+
         acl.grantPermission(voting, app, app.CREATE_COMMITTEE_ROLE());
         acl.revokePermission(this, app, app.CREATE_COMMITTEE_ROLE());
         acl.setPermissionManager(voting, app, app.CREATE_COMMITTEE_ROLE());
