@@ -84,7 +84,7 @@ function App() {
             }}
             onCreateMember={createMembersHandler}
             isCumulative={
-              selectedCommittee ? selectedCommittee.tokenParams.unique : false
+              selectedCommittee && selectedCommittee.tokenType.unique
             }
           />
         )

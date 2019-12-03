@@ -25,6 +25,33 @@ export const VOTING_TYPES = [
   },
   { name: 'Custom Voting', support: 0, acceptance: 0, duration: 0 },
 ]
+
+export function getTokenType(tokenParams) {
+  const [transferable, unique] = tokenParams
+  const name =
+    !transferable && !unique
+      ? 'Reputation'
+      : !transferable && unique
+      ? 'Membership'
+      : transferable && !unique
+      ? 'Equity'
+      : 'Transferable membership'
+  return { name, transferable, unique }
+}
+
+export function getVotingType(votingParams) {
+  const [support, acceptance, duration] = votingParams
+  const name =
+    support === '99' && acceptance === '99'
+      ? 'Consensus'
+      : support === '50' && acceptance === '50'
+      ? 'Absolute Majority'
+      : support === '50' && acceptance === '15'
+      ? 'Simple Majority'
+      : 'Custom Voting'
+  return { name, support, acceptance, duration }
+}
+
 export const EMPTY_COMMITTEE = {
   address: '',
   name: '',
@@ -37,48 +64,6 @@ export const EMPTY_COMMITTEE = {
   votingParams: { ...VOTING_TYPES[0], duration: VOTING_DURATION },
 }
 
-export const testCommittee = {
-  address: '0xc41e4c10b37d3397a99d4a90e7d85508a69a5c4c',
-  name: 'Membership Committee',
-  description: 'This a sample description nothing important to see here',
-  tokenSymbol: 'MCT',
-  tokenParams: COMMITTEE_TYPES[0],
-  tokenName: 'Membership Committee Token',
-  members: [
-    ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', INITIAL_ACCOUNT_STAKE],
-    ['0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', INITIAL_ACCOUNT_STAKE],
-  ],
-  selectedToken: 0,
-  votingParams: { ...VOTING_TYPES[0], duration: VOTING_DURATION },
-}
-
-export const testCommittee1 = {
-  address: '0xc41e4c10b37d3397a99d4a90e7d85508a69a5c4d',
-  name: 'Bounty Committee',
-  description: 'This a sample description nothing important to see here',
-  tokenSymbol: 'BCT',
-  tokenParams: COMMITTEE_TYPES[0],
-  tokenName: 'Bounty Committee Token',
-  members: [
-    ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', INITIAL_ACCOUNT_STAKE],
-  ],
-  selectedToken: 0,
-  votingParams: { ...VOTING_TYPES[0], duration: VOTING_DURATION },
-}
-
-export const testCommittee2 = {
-  address: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-  name: 'Finance Committee',
-  description: 'This a sample description nothing important to see here',
-  tokenSymbol: 'FCT',
-  tokenParams: COMMITTEE_TYPES[0],
-  tokenName: 'Finance Committee Token',
-  members: [
-    ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', INITIAL_ACCOUNT_STAKE],
-  ],
-  selectedToken: 0,
-  votingParams: { ...VOTING_TYPES[0], duration: VOTING_DURATION },
-}
 export function updateCommitteesMembers(
   committees,
   committeeAddress,

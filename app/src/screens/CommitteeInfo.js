@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useConnectedAccount, useNetwork } from '@aragon/api-react'
+import { useNetwork } from '@aragon/api-react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
@@ -24,8 +24,8 @@ const CommitteeInfo = ({
     address,
     tokenName,
     tokenSymbol,
-    tokenParams,
-    votingParams,
+    tokenType,
+    votingType,
     members,
   },
 }) => {
@@ -62,8 +62,9 @@ const CommitteeInfo = ({
                 </React.Fragment>
               }
               fields={['account']}
-              entries={members.map(m => {
-                return { account: m[0] }
+              entries={members.map(member => {
+                const [account] = member
+                return { account }
               })}
               renderEntry={({ account }) => {
                 return [<IdentityBadge entity={account} />]
@@ -101,39 +102,39 @@ const CommitteeInfo = ({
             <InfoRow>
               <span>Type</span>
               <span>:</span>
-              <strong>{tokenParams.name}</strong>
+              <strong>{tokenType && tokenType.name}</strong>
             </InfoRow>
             <InfoRow>
               <span>Transferable</span>
               <span>:</span>
-              <span>{tokenParams.transferable ? 'YES' : 'NO'}</span>
+              <span>{tokenType && tokenType.transferable ? 'YES' : 'NO'}</span>
             </InfoRow>
             <InfoRow>
-              <span>Cumulative</span>
+              <span>Unique</span>
               <span>:</span>
-              <span>{tokenParams.unique ? 'YES' : 'NO'}</span>
+              <span>{tokenType && tokenType.unique ? 'YES' : 'NO'}</span>
             </InfoRow>
           </Box>
           <Box heading="Voting Info">
             <InfoRow>
               <span>Type</span>
               <span>:</span>
-              <strong>{votingParams.name}</strong>
+              <strong>{votingType && votingType.name}</strong>
             </InfoRow>
             <InfoRow>
               <span>Support</span>
               <span>:</span>
-              <span>{votingParams.support}%</span>
+              <span>{votingType && votingType.support}%</span>
             </InfoRow>
             <InfoRow>
               <span>Acceptance</span>
               <span>:</span>
-              <span>{votingParams.acceptance}%</span>
+              <span>{votingType && votingType.acceptance}%</span>
             </InfoRow>
             <InfoRow>
               <span>Duration</span>
               <span>:</span>
-              <span>{votingParams.duration} days</span>
+              <span>{votingType && votingType.duration} days</span>
             </InfoRow>
           </Box>
         </React.Fragment>

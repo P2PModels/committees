@@ -6,17 +6,16 @@ import Aragon, { events } from '@aragon/api'
 import { hexToUtf8 } from 'web3-utils'
 
 import {
+  getTokenType,
+  getVotingType,
   updateCommitteesMembers,
   deleteCommittee,
-  testCommittee,
-  testCommittee1,
-  testCommittee2,
 } from '../src/lib/committee-utils'
 
 import { getTokenName } from '../src/lib/token-utils'
 
 const INITIAL_STATE = {
-  committees: [testCommittee, testCommittee1, testCommittee2],
+  committees: [],
   isSyncing: false,
 }
 
@@ -35,8 +34,9 @@ app.store(async (state, { event, returnValues }) => {
         name,
         description,
         initialMembers,
-        committeeType,
-        votingType,
+        stakes,
+        tokenParams,
+        votingParams,
         tokenSymbol,
       } = returnValues
       nextState = {
@@ -47,11 +47,11 @@ app.store(async (state, { event, returnValues }) => {
             name: hexToUtf8(name),
             description,
             address,
-            committeeType,
-            votingType,
+            tokenType: getTokenType(tokenParams),
+            votingType: getVotingType(votingParams),
             tokenSymbol,
             tokenName: getTokenName(tokenSymbol),
-            members: initialMembers,
+            members: initialMembers.map((member, i) => [member, stakes[i]]),
           },
         ],
       }
