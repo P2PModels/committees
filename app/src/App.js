@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
 import {
@@ -29,7 +29,7 @@ function App() {
   const [sidePanelOpened, setSidePanelOpened] = useState(false)
 
   const [screenName, setScreenName] = useState('committees')
-
+  console.log(committees)
   const ScreenAction = () => {
     switch (screenName) {
       case 'committees':
@@ -61,6 +61,8 @@ function App() {
     }
   }
 
+  const requestClose = useCallback(() => setSidePanelOpened(false))
+
   const SidePanelScreen = () => {
     switch (screenName) {
       case 'committees':
@@ -68,7 +70,7 @@ function App() {
           <NewCommitteePanel
             panelState={{
               opened: sidePanelOpened,
-              onClose: () => setSidePanelOpened(false),
+              onClose: requestClose,
             }}
             onCreateCommittee={createCommitteeHandler}
           />
@@ -78,7 +80,7 @@ function App() {
           <NewMembersPanel
             panelState={{
               opened: sidePanelOpened,
-              onClose: () => setSidePanelOpened(false),
+              onClose: requestClose,
             }}
             onCreateMember={createMembersHandler}
             isCumulative={

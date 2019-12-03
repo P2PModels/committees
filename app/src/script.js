@@ -5,8 +5,6 @@ import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
 import { hexToUtf8 } from 'web3-utils'
 
-import tokenManagerAbi from './abi/TokenManager.json'
-
 import {
   updateCommitteesMembers,
   deleteCommittee,

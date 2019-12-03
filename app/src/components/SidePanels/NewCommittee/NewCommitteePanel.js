@@ -9,6 +9,7 @@ import {
   TextInput,
   DropDown,
   isAddress,
+  useSidePanelFocusOnReady,
 } from '@aragon/ui'
 
 import VotingTypeField from './VotingTypeField/VotingTypeField'
@@ -77,6 +78,8 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
   const [votingTypes, setVotingTypes] = useState([...VOTING_TYPES])
   const [votingTypeIndex, setVotingTypeIndex] = useState(0)
 
+  const inputRef = useSidePanelFocusOnReady()
+  
   const changeField = ({ target: { name, value } }) => {
     setCommittee(committee => {
       return { ...committee, [name]: value }
@@ -170,6 +173,7 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
         err={error && error.name}
         input={
           <TextInput
+            ref={inputRef}
             name="name"
             onChange={changeField}
             value={committee.name}

@@ -14,110 +14,113 @@ function useFieldsLayout() {
   `
 }
 
-const MembersField = ({ members, onChange, accountStake }) => {
-  const [focusLastMemberNext, setFocusLastMemberNext] = useState(false)
+const MembersField = React.forwardRef(
+  ({ members, onChange, accountStake }, ref) => {
+    const [focusLastMemberNext, setFocusLastMemberNext] = useState(false)
 
-  const membersRef = useRef()
+    const membersRef = useRef()
 
-  const fieldsLayout = useFieldsLayout()
+    const fieldsLayout = useFieldsLayout()
 
-  useEffect(() => {
-    if (!focusLastMemberNext || !membersRef.current) {
-      return
-    }
-
-    setFocusLastMemberNext(false)
-
-    // This could be managed in individual MemberField components, but using
-    // the container with a .member class makes it simpler to manage, since we
-    // want to focus in three cases:
-    //   - A new field is being added.
-    //   - A field is being removed.
-    //   - The first field is being emptied.
-    //
-    const elts = membersRef.current.querySelectorAll('.member')
-    if (elts.length > 0) {
-      elts[elts.length - 1].querySelector('input').focus()
-    }
-  }, [focusLastMemberNext])
-
-  const focusLastMember = useCallback(() => {
-    setFocusLastMemberNext(true)
-  }, [])
-
-  const addMember = () => {
-    // setFormError(null)
-    onChange([...members, ['', accountStake]])
-    focusLastMember()
-  }
-
-  const removeMember = index => {
-    // setFormError(null)
-    onChange(
-      members.length < 2
-        ? // When the remove button of the last field
-          // gets clicked, we only empty the field.
-          [['', accountStake]]
-        : members.filter((_, i) => i !== index)
-    )
-    focusLastMember()
-  }
-
-  const hideRemoveButton = members.length < 2 && !members[0]
-
-  const updateMember = (index, updatedAccount, updatedStake) => {
-    onChange(
-      members.map((member, i) =>
-        i === index ? [updatedAccount, updatedStake] : member
-      )
-    )
-  }
-
-  const fixedStake = accountStake !== -1
-
-  return (
-    <Field
-      label={
-        <div
-          css={`
-            width: 100%;
-            ${fieldsLayout}
-          `}
-        >
-          <InnerLabel>Tokenholders</InnerLabel>
-          {!fixedStake && <InnerLabel>Balances</InnerLabel>}
-        </div>
+    useEffect(() => {
+      if (!focusLastMemberNext || !membersRef.current) {
+        return
       }
-    >
-      <div ref={membersRef}>
-        {members.map((member, index) => (
-          <MemberField
-            key={index}
-            index={index}
-            member={member}
-            onRemove={removeMember}
-            hideRemoveButton={hideRemoveButton}
-            onUpdate={updateMember}
-            displayStake={!fixedStake}
-          />
-        ))}
-      </div>
-      <Button
-        display="icon"
-        label="Add member"
-        size="small"
-        icon={
-          <IconPlus
+
+      setFocusLastMemberNext(false)
+
+      // This could be managed in individual MemberField components, but using
+      // the container with a .member class makes it simpler to manage, since we
+      // want to focus in three cases:
+      //   - A new field is being added.
+      //   - A field is being removed.
+      //   - The first field is being emptied.
+      //
+      const elts = membersRef.current.querySelectorAll('.member')
+      if (elts.length > 0) {
+        elts[elts.length - 1].querySelector('input').focus()
+      }
+    }, [focusLastMemberNext])
+
+    const focusLastMember = useCallback(() => {
+      setFocusLastMemberNext(true)
+    }, [])
+
+    const addMember = () => {
+      // setFormError(null)
+      onChange([...members, ['', accountStake]])
+      focusLastMember()
+    }
+
+    const removeMember = index => {
+      // setFormError(null)
+      onChange(
+        members.length < 2
+          ? // When the remove button of the last field
+            // gets clicked, we only empty the field.
+            [['', accountStake]]
+          : members.filter((_, i) => i !== index)
+      )
+      focusLastMember()
+    }
+
+    const hideRemoveButton = members.length < 2 && !members[0]
+
+    const updateMember = (index, updatedAccount, updatedStake) => {
+      onChange(
+        members.map((member, i) =>
+          i === index ? [updatedAccount, updatedStake] : member
+        )
+      )
+    }
+
+    const fixedStake = accountStake !== -1
+
+    return (
+      <Field
+        label={
+          <div
             css={`
-              color: ${theme.accent};
+              width: 100%;
+              ${fieldsLayout}
             `}
-          />
+          >
+            <InnerLabel>Tokenholders</InnerLabel>
+            {!fixedStake && <InnerLabel>Balances</InnerLabel>}
+          </div>
         }
-        onClick={addMember}
-      />
-    </Field>
-  )
-}
+      >
+        <div ref={membersRef}>
+          {members.map((member, index) => (
+            <MemberField
+              ref={ref}
+              key={index}
+              index={index}
+              member={member}
+              onRemove={removeMember}
+              hideRemoveButton={hideRemoveButton}
+              onUpdate={updateMember}
+              displayStake={!fixedStake}
+            />
+          ))}
+        </div>
+        <Button
+          display="icon"
+          label="Add member"
+          size="small"
+          icon={
+            <IconPlus
+              css={`
+                color: ${theme.accent};
+              `}
+            />
+          }
+          onClick={addMember}
+        />
+      </Field>
+    )
+  }
+)
 
 const InnerLabel = styled.div`
   text-transform: capitalize;

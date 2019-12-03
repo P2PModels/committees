@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Button, EmptyStateCard, GU, LoadingRing, SyncIndicator } from '@aragon/ui'
+import { Button, EmptyStateCard, GU, LoadingRing } from '@aragon/ui'
 
 const NoCommittees = React.memo(({ onNewCommittee, isSyncing }) => {
   return (
