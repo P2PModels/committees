@@ -165,7 +165,7 @@ contract Template is TemplateBase {
         acl.createPermission(voting, finance, finance.MANAGE_PAYMENTS_ROLE(), voting);
         acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
 
-        acl.createPermission(voting, app, app.CREATE_COMMITTEE_ROLE(), voting);
+        acl.createPermission(this, app, app.CREATE_COMMITTEE_ROLE(), this);
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.DELETE_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_MEMBERS_ROLE(), voting);
@@ -176,7 +176,6 @@ contract Template is TemplateBase {
         acl.grantPermission(app, dao, dao.APP_MANAGER_ROLE());
         acl.grantPermission(app, acl, acl.CREATE_PERMISSIONS_ROLE());
 
-        acl.grantPermission(this, app, app.CREATE_COMMITTEE_ROLE());
         createMembershipCommittee(app);
         createBountiesCommittee(app);
         createFinanceCommittee(app);
@@ -190,7 +189,9 @@ contract Template is TemplateBase {
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
 
+        acl.grantPermission(voting, app, app.CREATE_COMMITTEE_ROLE());
         acl.revokePermission(this, app, app.CREATE_COMMITTEE_ROLE());
+        acl.setPermissionManager(voting, app, app.CREATE_COMMITTEE_ROLE());
 
         emit DeployInstance(dao);
     }

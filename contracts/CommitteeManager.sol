@@ -72,8 +72,6 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     external auth(CREATE_COMMITTEE_ROLE)
     {
         address[2] memory apps; // 0: token manager; 1: voting
-        // address tokenManager;
-        // address voting;
         apps = _createCommitteeApps(_tokenSymbol, _initialMembers, _votingParams, _tokenParams, _stakes);
 
         committees[apps[0]] = Committee(_name, _description, apps[0], apps[1]);

@@ -1,27 +1,30 @@
-const INITIAL_ACCOUNT_STAKE = -1
+import { isAddress } from 'web3-utils'
 
-export const EMPTY_MEMBER = ['', -1]
-
-export const COMMITTEE_TYPES = [
+export const DEFAULT_TOKEN_TYPES = [
   { name: 'Membership', transferable: false, unique: true },
   { name: 'Equity', transferable: true, unique: false },
   { name: 'Reputation', transferable: false, unique: false },
 ]
 
-export const VOTING_DURATION = 30
-export const VOTING_TYPES = [
-  { name: 'Consensus', support: 99, acceptance: 99, duration: VOTING_DURATION },
+const DEFAULT_VOTING_DURATION = 30
+export const DEFAULT_VOTING_TYPES = [
+  {
+    name: 'Consensus',
+    support: 99,
+    acceptance: 99,
+    duration: DEFAULT_VOTING_DURATION,
+  },
   {
     name: 'Absolute Majority',
     support: 50,
     acceptance: 50,
-    duration: VOTING_DURATION,
+    duration: DEFAULT_VOTING_DURATION,
   },
   {
     name: 'Simple Majority',
     support: 50,
     acceptance: 15,
-    duration: VOTING_DURATION,
+    duration: DEFAULT_VOTING_DURATION,
   },
   { name: 'Custom Voting', support: 0, acceptance: 0, duration: 0 },
 ]
@@ -50,18 +53,6 @@ export function getVotingType(votingParams) {
       ? 'Simple Majority'
       : 'Custom Voting'
   return { name, support, acceptance, duration }
-}
-
-export const EMPTY_COMMITTEE = {
-  address: '',
-  name: '',
-  description: '',
-  tokenSymbol: '',
-  tokenParams: COMMITTEE_TYPES[0],
-  tokenName: '',
-  members: [['', INITIAL_ACCOUNT_STAKE]],
-  selectedToken: 0,
-  votingParams: { ...VOTING_TYPES[0], duration: VOTING_DURATION },
 }
 
 export function updateCommitteesMembers(
@@ -110,13 +101,13 @@ function validateDuplicateAddresses(members, validateAddress) {
   return validAddresses.length === new Set(validAddresses).size
 }
 
-export function validateMembers(members, validateAddress) {
-  console.log(validateAddress)
-  if (!members.some(([address]) => validateAddress(address)))
+export function validateMembers(members, membership) {
+  if (!members.some(([address]) => isAddress(address)))
     return 'You need at least one valid address.'
 
   if (
-    !members.some(([address, stake]) => validateAddress(address) && stake > 0)
+    !membership &&
+    !members.some(([address, stake]) => isAddress(address) && stake > 0)
   ) {
     return 'You need at least one valid address with a positive balance.'
   }
@@ -124,4 +115,27 @@ export function validateMembers(members, validateAddress) {
   if (!validateDuplicateAddresses(members, isAddress)) {
     return 'One of your members is using the same address than another member. Please ensure every member address is unique.'
   }
+}
+
+export function validateVotingParams(support, acceptance, duration) {
+  const votingErrors = []
+  if (isNaN(support) || support < 1 || support >= 100)
+    votingErrors.push('Support must be a value between 1 and 99')
+
+  if (
+    isNaN(acceptance) ||
+    acceptance < 1 ||
+    acceptance > support ||
+    acceptance >= 100
+  ) {
+    votingErrors.push(
+      'Acceptance must be greater than 1 and less than support value'
+    )
+  }
+
+  if (isNaN(duration) || duration < 1 || duration > 360) {
+    votingErrors.push('Duration must be greater than 1 and less than 360')
+  }
+
+  return votingErrors
 }

@@ -1,8 +1,7 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
-// import { of } from 'rxjs'
-// import AragonApi from '@aragon/api'
 import Aragon, { events } from '@aragon/api'
+
 import { hexToUtf8 } from 'web3-utils'
 
 import {

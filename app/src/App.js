@@ -108,24 +108,26 @@ function App() {
     stakes,
   }) => {
     setSidePanelOpened(false)
-    // api
-    //   .createCommittee(
-    //     utf8ToHex(name),
-    //     description,
-    //     tokenSymbol,
-    //     [tokenParams.transferable, tokenParams.unique],
-    //     members,
-    //     [0],
-    //     votingParams
-    //   )
-    //   .subscribe(
-    //     () => {
-    //       console.log('Create committee transaction completed!!!')
-    //     },
-    //     err => {
-    //       console.log(err)
-    //     }
-    //   )
+    const { transferable, unique } = tokenParams
+    const { support, acceptance, duration } = votingParams
+    api
+      .createCommittee(
+        utf8ToHex(name),
+        description,
+        tokenSymbol,
+        [transferable, unique],
+        addresses,
+        stakes,
+        [support, acceptance, duration]
+      )
+      .subscribe(
+        () => {
+          console.log('Create committee transaction completed!!!')
+        },
+        err => {
+          console.log(err)
+        }
+      )
   }
 
   const createMembersHandler = members => {

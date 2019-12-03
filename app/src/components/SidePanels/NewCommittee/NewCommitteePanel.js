@@ -8,7 +8,6 @@ import {
   Tag,
   TextInput,
   DropDown,
-  isAddress,
   useSidePanelFocusOnReady,
 } from '@aragon/ui'
 
@@ -16,49 +15,25 @@ import VotingTypeField from './VotingTypeField/VotingTypeField'
 import MembersField from '../../Form/MembersField/MembersField'
 
 import {
-  VOTING_TYPES,
-  COMMITTEE_TYPES,
-  EMPTY_COMMITTEE,
+  DEFAULT_VOTING_TYPES,
+  DEFAULT_TOKEN_TYPES,
   validateMembers,
+  validateVotingParams,
 } from '../../../lib/committee-utils'
-import { getTokenSymbol, getTokenName } from '../../../lib/token-utils'
+import { getTokenSymbol } from '../../../lib/token-utils'
 
-function transformMembers(members, tokenUnique) {
-  const addresses = []
-  const stakes = []
-  members.forEach(m => {
-    if (isAddress[m[0]] && tokenUnique) addresses.push(m[0])
-    else if (isAddress[m[0]] && m[1] > 0) {
-      addresses.push(m[0])
-      stakes.stakes.push(m[1])
-    }
-  })
-  // if (tokenUnique) stakes = [1]
-  return [addresses, stakes]
-}
+const DEFAULT_VOTING_PARAMS = { ...DEFAULT_VOTING_TYPES[0] }
 
-function validateVotingParams(support, acceptance, duration) {
-  const votingErrors = []
-  if (isNaN(support) || support < 1 || support >= 100)
-    votingErrors.push('Support must be a value between 1 and 99')
+const tokenTypes = DEFAULT_TOKEN_TYPES.map(types => {
+  return (
+    <Text>
+      {types.name + ' '}
+      {types.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
+      {types.unique ? <Tag uppercase={false}>No cumulative</Tag> : null}
+    </Text>
+  )
+})
 
-  if (
-    isNaN(acceptance) ||
-    acceptance < 1 ||
-    acceptance > support ||
-    acceptance >= 100
-  ) {
-    votingErrors.push(
-      'Acceptance must be greater than 1 and less than support value'
-    )
-  }
-
-  if (isNaN(duration) || duration < 1 || duration > 360) {
-    votingErrors.push('Duration must be greater than 1 and less than 360')
-  }
-
-  return votingErrors
-}
 const NewCommitteePanel = React.memo(({ panelState, onCreateCommittee }) => {
   return (
     <SidePanel
@@ -74,53 +49,25 @@ const NewCommitteePanel = React.memo(({ panelState, onCreateCommittee }) => {
 const NewCommitteePanelContent = ({ onCreateCommittee }) => {
   console.log('Rendering New Committee Panel...')
   const [error, setError] = useState({})
-  const [committee, setCommittee] = useState({ ...EMPTY_COMMITTEE })
-  const [votingTypes, setVotingTypes] = useState([...VOTING_TYPES])
-  const [votingTypeIndex, setVotingTypeIndex] = useState(0)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [tokenType, setTokenType] = useState(0)
+  const [votingParams, setVotingParams] = useState({ ...DEFAULT_VOTING_PARAMS })
+  const [members, setMembers] = useState([['', -1]])
+  const isUnique = DEFAULT_TOKEN_TYPES[tokenType].unique
+  const { support, acceptance, duration } = votingParams
 
   const inputRef = useSidePanelFocusOnReady()
-  
-  const changeField = ({ target: { name, value } }) => {
-    setCommittee(committee => {
-      return { ...committee, [name]: value }
-    })
-  }
-
-  const changeTokenType = index => {
-    setVotingTypeIndex(index)
-    setCommittee(committee => {
-      return { ...committee, selectedToken: index }
-    })
-  }
-
-  const changeVotingType = (votingParams, isCustom) => {
-    if (isCustom)
-      setVotingTypes(votingTypes => {
-        const types = [...votingTypes]
-        types[types.length - 1] = votingParams
-        return types
-      })
-    setCommittee(committee => {
-      return { ...committee, votingParams }
-    })
-  }
-
   const clearPanel = useCallback(() => {
     setError({})
-    setCommittee({ ...EMPTY_COMMITTEE })
-    setVotingTypes([...VOTING_TYPES])
-    setVotingTypeIndex(0)
+    setName('')
+    setDescription('')
+    setTokenType(0)
+    setVotingParams({ ...DEFAULT_VOTING_PARAMS })
+    setMembers(['', -1])
   }, [])
 
-  const changeMembers = members => {
-    setCommittee(committee => {
-      return { ...committee, members }
-    })
-  }
-
   const handleSubmit = () => {
-    const { name, description, tokenParams, votingParams, members } = committee
-    const { support, acceptance, duration } = votingParams
     const error = {}
     let errorMsg
 
@@ -134,37 +81,27 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
     errorMsg = validateVotingParams(support, acceptance, duration)
     if (errorMsg && errorMsg.length) error.votingType = errorMsg
 
-    errorMsg = validateMembers(members, isAddress)
+    errorMsg = validateMembers(members, isUnique)
     if (errorMsg) error.members = errorMsg
 
     if (Object.keys(error).length) {
       setError({ ...error })
     } else {
-      clearPanel()
-      const tokenUnique = COMMITTEE_TYPES[committee.selectedToken].unique
-      const [addresses, stakes] = transformMembers(members, tokenUnique)
-
+      const addresses = members.map(member => member[0])
+      const stakes = members.map(member => (isUnique ? 1 : member[1]))
       onCreateCommittee({
         name,
         description,
         votingParams,
-        tokenParams,
+        tokenParams: DEFAULT_TOKEN_TYPES[tokenType],
         tokenSymbol: getTokenSymbol(name, true),
         addresses,
         stakes,
       })
+      clearPanel()
     }
   }
 
-  const tokenTypes = COMMITTEE_TYPES.map(c => {
-    return (
-      <Text>
-        {c.name + ' '}
-        {c.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
-        {c.unique ? <Tag uppercase={false}>No cumulative</Tag> : null}
-      </Text>
-    )
-  })
   return (
     <Form onSubmit={handleSubmit} submitText="Create Committee">
       <FormField
@@ -175,8 +112,8 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
           <TextInput
             ref={inputRef}
             name="name"
-            onChange={changeField}
-            value={committee.name}
+            onChange={e => setName(e.target.value)}
+            value={name}
             wide
           />
         }
@@ -188,8 +125,8 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
         input={
           <TextInput
             name="description"
-            onChange={changeField}
-            value={committee.description}
+            onChange={e => setDescription(e.target.value)}
+            value={description}
             wide
           />
         }
@@ -200,10 +137,10 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
         input={
           <DropDown
             wide
-            name="selectedToken"
+            name="tokenType"
             items={tokenTypes}
-            selected={committee.selectedToken}
-            onChange={changeTokenType}
+            selected={tokenType}
+            onChange={setTokenType}
           />
         }
       />
@@ -213,9 +150,9 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
         err={error && error.votingType}
         input={
           <VotingTypeField
-            votingTypes={votingTypes}
-            selectedVoting={votingTypeIndex}
-            onChange={changeVotingType}
+            votingTypes={DEFAULT_VOTING_TYPES}
+            votingParams={votingParams}
+            onChange={setVotingParams}
           />
         }
       />
@@ -225,11 +162,9 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
         err={error && error.members}
         input={
           <MembersField
-            accountStake={
-              COMMITTEE_TYPES[committee.selectedToken].unique ? 1 : -1
-            }
-            members={committee.members}
-            onChange={changeMembers}
+            accountStake={isUnique ? 1 : -1}
+            members={members}
+            onChange={setMembers}
           />
         }
       />
