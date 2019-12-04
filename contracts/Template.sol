@@ -70,62 +70,6 @@ contract Template is TemplateBase {
         tokenFactory = new MiniMeTokenFactory();
     }
 
-    function createMembershipCommittee(CommitteeManager app) internal {
-        bool[2] memory tokenParams = [false, true];
-        address[] memory initialMembers = new address[](2);
-        uint256[] memory stakes = new uint256[](2);
-        initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
-        initialMembers[1] = 0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb;
-        stakes[0] = 1;
-        stakes[1] = 1;
-        uint64[3] memory votingParams = [uint64(99), 99, 30];
-        app.createCommittee(
-            hex"004d656d6265727368697020436f6d6d6974746565", // Membership Committee
-            "This a sample description nothing important to see here",
-            "MCT",
-            tokenParams,
-            initialMembers,
-            stakes,
-            votingParams
-        );
-    }
-
-    function createBountiesCommittee(CommitteeManager app) internal {
-        bool[2] memory tokenParams = [false, false];
-        address[] memory initialMembers = new address[](1);
-        uint256[] memory stakes = new uint256[](1);
-        initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
-        stakes[0] = 1;
-        uint64[3] memory votingParams = [uint64(50), 15, 30];
-        app.createCommittee(
-            hex"00426f756e7469657320436f6d6d6974746565", // Bounties Committee
-            "This a sample description nothing important to see here",
-            "BCT",
-            tokenParams,
-            initialMembers,
-            stakes,
-            votingParams
-        );
-    }
-
-    function createFinanceCommittee(CommitteeManager app) internal {
-        bool[2] memory tokenParams = [true, false];
-        address[] memory initialMembers = new address[](1);
-        uint256[] memory stakes = new uint256[](1);
-        initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
-        stakes[0] = 1;
-        uint64[3] memory votingParams = [uint64(50), 50, 30];
-        app.createCommittee(
-            hex"0046696e616e636520436f6d6d6974746565", // Finance Committee
-            "This a sample description nothing important to see here",
-            "FCT",
-            tokenParams,
-            initialMembers,
-            stakes,
-            votingParams
-        );
-    }
-
     function newInstance() public {
         Kernel dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
@@ -193,5 +137,61 @@ contract Template is TemplateBase {
         acl.revokePermission(this, app, app.CREATE_COMMITTEE_ROLE());
 
         emit DeployInstance(dao);
+    }
+    
+    function createMembershipCommittee(CommitteeManager app) internal {
+        bool[2] memory tokenParams = [false, true];
+        address[] memory initialMembers = new address[](2);
+        uint256[] memory stakes = new uint256[](2);
+        initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
+        initialMembers[1] = 0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb;
+        stakes[0] = 1;
+        stakes[1] = 1;
+        uint64[3] memory votingParams = [uint64(99), 99, 30];
+        app.createCommittee(
+            hex"004d656d6265727368697020436f6d6d6974746565", // Membership Committee
+            "This a sample description nothing important to see here",
+            "MCT",
+            tokenParams,
+            initialMembers,
+            stakes,
+            votingParams
+        );
+    }
+
+    function createBountiesCommittee(CommitteeManager app) internal {
+        bool[2] memory tokenParams = [false, false];
+        address[] memory initialMembers = new address[](1);
+        uint256[] memory stakes = new uint256[](1);
+        initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
+        stakes[0] = 1;
+        uint64[3] memory votingParams = [uint64(50), 15, 30];
+        app.createCommittee(
+            hex"00426f756e7469657320436f6d6d6974746565", // Bounties Committee
+            "This a sample description nothing important to see here",
+            "BCT",
+            tokenParams,
+            initialMembers,
+            stakes,
+            votingParams
+        );
+    }
+
+    function createFinanceCommittee(CommitteeManager app) internal {
+        bool[2] memory tokenParams = [true, false];
+        address[] memory initialMembers = new address[](1);
+        uint256[] memory stakes = new uint256[](1);
+        initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
+        stakes[0] = 1;
+        uint64[3] memory votingParams = [uint64(50), 50, 30];
+        app.createCommittee(
+            hex"0046696e616e636520436f6d6d6974746565", // Finance Committee
+            "This a sample description nothing important to see here",
+            "FCT",
+            tokenParams,
+            initialMembers,
+            stakes,
+            votingParams
+        );
     }
 }
