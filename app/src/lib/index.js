@@ -53,8 +53,8 @@ export function deleteCommittee(committees, committeeAddress) {
   })
 }
 
-// export const COMMITTEE_TYPES = ['Membership', 'Equity', 'Reputation']
-export const COMMITTEE_TYPES = [
+// export const TOKEN_TYPES = ['Membership', 'Equity', 'Reputation']
+export const TOKEN_TYPES = [
   { name: 'Membership', transferable: false, maxAccount: 1 },
   { name: 'Equity', transferable: true, maxAccount: 0 },
   { name: 'Reputation', transferable: false, maxAccount: 0 },

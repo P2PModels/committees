@@ -19,28 +19,25 @@ const ParamDetail = ({ children }) => {
 }
 // Support, acceptance and duration are props so we dont need to maintain state in this component
 // AND parent component.
-const votingTypeField = props => {
+const votingTypeField = ({ votingTypes, votingParams, onChange }) => {
   console.log('Rendering VotingTypeField component')
-  const { votingTypes } = props
-  const { onChange } = props
-  const [disabled, setDisabled] = useState(true)
   const [votingTypeIndex, setVotingTypeIndex] = useState(0)
+  const isCustom = votingTypeIndex === votingTypes.length - 1
 
   const changeDropdown = index => {
     setVotingTypeIndex(index)
-    setDisabled(index !== votingTypes.length - 1)
     onChange(votingTypes[index])
   }
 
   const changeField = ({ target: { name, value } }) => {
-    onChange({ ...votingTypes[votingTypeIndex], [name]: value }, true)
+    onChange({ support, acceptance, duration, [name]: value })
   }
 
-  const votingTypesName = votingTypes.map(vt => {
-    return vt.name
-  })
+  const votingTypesName = votingTypes.map(({ name }) => name)
 
-  const { support, acceptance, duration } = votingTypes[votingTypeIndex]
+  const { support, acceptance, duration } = isCustom
+    ? votingParams
+    : votingTypes[votingTypeIndex]
 
   return (
     <div>
@@ -65,7 +62,7 @@ const votingTypeField = props => {
             max="99"
             name="support"
             value={support}
-            disabled={disabled}
+            disabled={!isCustom}
             type="number"
             onChange={changeField}
             minLength="0"
@@ -78,7 +75,7 @@ const votingTypeField = props => {
             max="99"
             name="acceptance"
             value={acceptance}
-            disabled={disabled}
+            disabled={!isCustom}
             type="number"
             onChange={changeField}
           />
@@ -91,7 +88,7 @@ const votingTypeField = props => {
             max="360"
             name="duration"
             value={duration}
-            disabled={disabled}
+            disabled={!isCustom}
             type="number"
             onChange={changeField}
           />
