@@ -120,8 +120,8 @@ export function validateMembers(members, isMembership) {
 }
 
 export function decoupleMembers(members, isUnique = true) {
-  const addresses = members.map(member => member[0])
-  const stakes = members.map(member => (isUnique ? 1 : member[1]))
+  const addresses = members.filter(member => member[0] && member[0]).map(member => member[0])
+  const stakes = members.filter((member, index) => index < addresses.length).map(member => (isUnique ? 1 : member[1]))
 
   return [addresses, stakes]
 }
