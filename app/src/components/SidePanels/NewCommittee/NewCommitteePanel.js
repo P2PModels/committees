@@ -53,7 +53,6 @@ const NewCommitteePanel = React.memo(() => {
   const { support, acceptance, duration } = votingParams
 
   const inputRef = useSidePanelFocusOnReady()
-  const customFieldTextStyle = textStyle('body3')
 
   const createCommittee = ({
     name,

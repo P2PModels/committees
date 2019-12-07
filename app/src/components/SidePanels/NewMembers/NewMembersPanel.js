@@ -6,6 +6,7 @@ import { useSidePanelFocusOnReady } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import MembersField from '../../Form/MembersField/MembersField'
+import { usePanelManagement } from '../../SidePanels'
 
 import {
   validateMembers,
@@ -16,12 +17,14 @@ import { isAddress } from 'web3-utils'
 
 const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
   const { api } = useAragonApi()
+  const { closePanel } = usePanelManagement()
   const [error, setError] = useState({})
   const [members, setMembers] = useState([DEFAULT_MEMBER])
 
   const inputRef = useSidePanelFocusOnReady()
 
   const createMembers = (committeeAddress, addresses, stakes) => {
+    // closePanel()    
     api
       .addMembers(committeeAddress, addresses, stakes)
       .subscribe(

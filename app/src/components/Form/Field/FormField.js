@@ -10,7 +10,7 @@ const FormField = ({ input, label, hint, required, separator, err }) => {
   //   ({ props: childProps }) => childProps.required
   // )
   const theme = useTheme()
-
+  console.log(label)
   return (
     <div style={{ marginBottom: '1rem' }}>
       <FieldTitle>
@@ -18,7 +18,6 @@ const FormField = ({ input, label, hint, required, separator, err }) => {
           <span
             css={`
               ${textStyle('body2')};
-              /* color: ${theme.accent}; */
             `}
           >
             {label}
