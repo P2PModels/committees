@@ -2,29 +2,35 @@ import 'core-js/stable'
 import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
 
+import tmAbi from './abi/TokenManager.json'
+import tokenAbi from './abi/minimeToken.json'
+import votingAbi from './abi/Voting.json'
+
 import { hexToUtf8 } from 'web3-utils'
 
 import {
-  getTokenType,
-  getVotingType,
   updateCommitteesMembers,
   deleteCommittee,
 } from '../src/lib/committee-utils'
-
-import { getTokenName } from '../src/lib/token-utils'
 
 const INITIAL_STATE = {
   committees: [],
   isSyncing: false,
 }
 
-const app = new Aragon()
+const api = new Aragon()
 
-app.store(async (state, { event, returnValues }) => {
+api.store(async (state, { event, returnValues }) => {
   console.log(state, event, returnValues)
   let nextState = { ...state }
 
   if (state == null) nextState = INITIAL_STATE
+
+  if (event === events.SYNC_STATUS_SYNCING) {
+    return { ...nextState, isSyncing: true }
+  } else if (event === events.SYNC_STATUS_SYNCED) {
+    return { ...nextState, isSyncing: false }
+  }
 
   switch (event) {
     case 'CreateCommittee':
@@ -33,11 +39,38 @@ app.store(async (state, { event, returnValues }) => {
         votingAddress,
         name,
         description,
-        initialMembers,
-        stakes,
-        tokenParams,
-        votingParams,
       } = returnValues
+      const tm = api.external(address, tmAbi)
+      const [tokenAddress, maxAccountTokens] = await Promise.all([
+        tm.token().toPromise(),
+        tm.maxAccountTokens().toPromise(),
+      ])
+      const token = api.external(tokenAddress, tokenAbi)
+      const [tokenSymbol, decimals, isTransferable] = await Promise.all([
+        token.symbol().toPromise(),
+        token.decimals().toPromise(),
+        token.transfersEnabled().toPromise(),
+      ])
+      const voting = api.external(votingAddress, votingAbi)
+      const [
+        supportRequiredPct,
+        minAcceptQuorumPct,
+        voteTime,
+      ] = await Promise.all([
+        voting.supportRequiredPct().toPromise(),
+        voting.minAcceptQuorumPct().toPromise(),
+        voting.voteTime().toPromise(),
+      ])
+      const isUnique = maxAccountTokens === 1 && decimals === 0
+      const tokenParams = [isUnique, isTransferable]
+      const votingParams = [
+        supportRequiredPct / 10 ** 16,
+        minAcceptQuorumPct / 10 ** 16,
+        voteTime / (60 * 60 * 24),
+      ]
+      console.log(votingParams)
+      const initialMembers = []
+      const stakes = []
       nextState = {
         ...state,
         committees: [
@@ -47,10 +80,9 @@ app.store(async (state, { event, returnValues }) => {
             description,
             address,
             votingAddress,
-            tokenType: getTokenType(tokenParams),
-            votingType: getVotingType(votingParams),
-            tokenSymbol: 'TODO',
-            tokenName: getTokenName('TODO'),
+            tokenParams,
+            votingParams,
+            tokenSymbol,
             members: initialMembers.map((member, i) => [member, stakes[i]]),
           },
         ],

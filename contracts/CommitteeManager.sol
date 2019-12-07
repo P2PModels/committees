@@ -16,8 +16,7 @@ import "./CommitteeHelper.sol";
 contract CommitteeManager is AragonApp, CommitteeHelper {
 
     /// Events
-    event CreateCommittee(address indexed committeeAddress, address indexed votingAddress, bytes32 name, string description,
-    bool[2] tokenParams, address[] initialMembers, uint256[] stakes, uint64[3] votingParams);
+    event CreateCommittee(address indexed committeeAddress, address indexed votingAddress, bytes32 name, string description);
     event RemoveCommittee(address indexed committeeAddress);
     event AddMembers(address indexed committeeAddress, address[] members, uint256[] stakes);
     event RemoveMember(address indexed committeeAddress, address member);
@@ -35,7 +34,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
     /// State
     mapping(address => Committee) committees;
-    //Entity that manages committees apps permissions. 
+    //Entity that manages committees apps permissions.
     Voting internal entity;
 
     /// ACL
@@ -110,7 +109,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         apps = _createCommitteeApps(_tokenSymbol, _initialMembers, _votingParams, _tokenParams, _stakes);
 
         committees[apps[0]] = Committee(_name, _description, apps[0], apps[1]);
-        emit CreateCommittee(apps[0], apps[1], _name, _description, _tokenParams, _initialMembers, _stakes, _votingParams);
+        emit CreateCommittee(apps[0], apps[1], _name, _description);
     }
 
     /**

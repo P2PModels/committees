@@ -2,7 +2,9 @@ import React, { useCallback } from 'react'
 import { useNetwork } from '@aragon/api-react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import { getTokenName } from '../lib/token-utils'
 
+import { getTokenType, getVotingType } from '../lib/committee-utils'
 import {
   Split,
   Box,
@@ -22,15 +24,17 @@ const CommitteeInfo = ({
   committee: {
     description,
     address,
-    tokenName,
+    tokenParams,
     tokenSymbol,
-    tokenType,
-    votingType,
+    votingParams,
     members,
   },
 }) => {
   const theme = useTheme()
   const network = useNetwork()
+  const tokenName = getTokenName(tokenSymbol)
+  const tokenType = getTokenType(tokenParams)
+  const votingType = getVotingType(votingParams)
 
   const removeMemberHandler = member => {
     console.log(`Removing member ${member}`)

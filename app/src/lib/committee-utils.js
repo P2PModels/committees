@@ -46,12 +46,13 @@ export function getTokenType(tokenParams) {
 
 export function getVotingType(votingParams) {
   const [support, acceptance, duration] = votingParams
+  console.log(votingParams)
   const name =
-    support === '99' && acceptance === '99'
+    support === 99 && acceptance === 99
       ? 'Consensus'
-      : support === '50' && acceptance === '50'
+      : support === 50 && acceptance === 50
       ? 'Absolute Majority'
-      : support === '50' && acceptance === '15'
+      : support === 50 && acceptance === 15
       ? 'Simple Majority'
       : 'Custom Voting'
   return { name, support, acceptance, duration }
