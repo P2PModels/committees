@@ -32,7 +32,7 @@ export const DEFAULT_VOTING_TYPES = [
 export const DEFAULT_MEMBER = ['', -1]
 
 export function getTokenType(tokenParams) {
-  const [transferable, unique] = tokenParams
+  const [unique, transferable ] = tokenParams
   const name =
     !transferable && !unique
       ? 'Reputation'
@@ -46,7 +46,6 @@ export function getTokenType(tokenParams) {
 
 export function getVotingType(votingParams) {
   const [support, acceptance, duration] = votingParams
-  console.log(votingParams)
   const name =
     support === 99 && acceptance === 99
       ? 'Consensus'

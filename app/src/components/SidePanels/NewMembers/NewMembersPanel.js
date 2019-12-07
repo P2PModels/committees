@@ -24,7 +24,7 @@ const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
   const inputRef = useSidePanelFocusOnReady()
 
   const createMembers = (committeeAddress, addresses, stakes) => {
-    // closePanel()    
+    closePanel()    
     api
       .addMembers(committeeAddress, addresses, stakes)
       .subscribe(

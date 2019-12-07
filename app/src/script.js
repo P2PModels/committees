@@ -61,14 +61,15 @@ api.store(async (state, { event, returnValues }) => {
         voting.minAcceptQuorumPct().toPromise(),
         voting.voteTime().toPromise(),
       ])
-      const isUnique = maxAccountTokens === 1 && decimals === 0
+
+      const isUnique = maxAccountTokens === '1' && decimals === '0'
       const tokenParams = [isUnique, isTransferable]
       const votingParams = [
         supportRequiredPct / 10 ** 16,
         minAcceptQuorumPct / 10 ** 16,
         voteTime / (60 * 60 * 24),
       ]
-      console.log(votingParams)
+  
       const initialMembers = []
       const stakes = []
       nextState = {

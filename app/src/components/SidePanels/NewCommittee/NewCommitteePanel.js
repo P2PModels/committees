@@ -65,6 +65,7 @@ const NewCommitteePanel = React.memo(() => {
   }) => {
     const { transferable, unique } = tokenParams
     const { support, acceptance, duration } = votingParams
+    console.log(transferable, unique)
     closePanel()
     api
       .createCommittee(

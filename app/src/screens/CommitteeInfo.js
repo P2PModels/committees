@@ -39,7 +39,7 @@ const CommitteeInfo = ({
   const removeMemberHandler = member => {
     console.log(`Removing member ${member}`)
   }
-
+  console.log(members)
   return (
     <Split
       primary={
