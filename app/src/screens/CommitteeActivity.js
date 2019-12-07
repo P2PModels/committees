@@ -40,11 +40,9 @@ async function getActivities(api) {
   ]
 
   // Get transaction objects and filter by transactions that belong to DAO apps
-  const txs = (
-    await Promise.all(
-      txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
-    )
-  ).filter(({ to }) => addresses.includes(toChecksumAddress(to)))
+  const txs = (await Promise.all(
+    txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
+  )).filter(({ to }) => addresses.includes(toChecksumAddress(to)))
   console.log('txs', txs)
 
   // Get radspec descriptions

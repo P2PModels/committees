@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
 import {
@@ -10,33 +10,45 @@ import {
   textStyle,
 } from '@aragon/ui'
 
+import {
+  PanelManager,
+  PanelContext,
+  usePanelManagement,
+} from './components/SidePanels/'
+
 import NoCommittees from './screens/NoCommittees'
-import NewCommitteePanel from './components/SidePanels/NewCommittee/NewCommitteePanel'
-
-import { utf8ToHex } from 'web3-utils'
-
-// import { EMPTY_COMMITTEE, testCommittee } from './lib/committee-utils'
 import Committees from './screens/Committees'
 import CommitteeDetails from './screens/CommitteeDetails'
-import NewMembersPanel from './components/SidePanels/NewMemberPanel'
 
 function App() {
   const theme = useTheme()
   const { api, appState } = useAragonApi()
+
   const { committees, isSyncing } = appState
 
   const [selectedCommittee, setSelectedCommittee] = useState(null)
-  const [sidePanelOpened, setSidePanelOpened] = useState(false)
-
   const [screenName, setScreenName] = useState('committees')
-  console.log(committees)
+  const [panel, setPanel] = useState(null)
+  const [panelProps, setPanelProps] = useState(null)
+
+  const panelConfiguration = {
+    setActivePanel: p => setPanel(p),
+    setPanelProps: p => setPanelProps(p),
+  }
+
+  const closePanel = () => {
+    setPanel(null)
+    setPanelProps(null)
+  }
+
   const ScreenAction = () => {
+    const { setupNewCommittee, setupNewMembers } = usePanelManagement()
     switch (screenName) {
       case 'committees':
         return (
           <Button
             mode="strong"
-            onClick={() => setSidePanelOpened(true)}
+            onClick={() => setupNewCommittee()}
             label="New Committee"
           />
         )
@@ -44,7 +56,12 @@ function App() {
         return (
           <Button
             mode="strong"
-            onClick={() => setSidePanelOpened(true)}
+            onClick={() =>
+              setupNewMembers(
+                selectedCommittee && selectedCommittee.address,
+                selectedCommittee && selectedCommittee.tokenType.unique
+              )
+            }
             label="New Member"
           />
         )
@@ -52,7 +69,7 @@ function App() {
         return (
           <Button
             mode="strong"
-            onClick={() => setSidePanelOpened(true)}
+            onClick={() => console.log('Setting up permission panel...')}
             label="New Permission"
           />
         )
@@ -61,93 +78,6 @@ function App() {
     }
   }
 
-  const requestClose = useCallback(() => setSidePanelOpened(false))
-
-  const SidePanelScreen = () => {
-    switch (screenName) {
-      case 'committees':
-        return (
-          <NewCommitteePanel
-            panelState={{
-              opened: sidePanelOpened,
-              onClose: requestClose,
-            }}
-            onCreateCommittee={createCommitteeHandler}
-          />
-        )
-      case 'info':
-        return (
-          <NewMembersPanel
-            panelState={{
-              opened: sidePanelOpened,
-              onClose: requestClose,
-            }}
-            onCreateMember={createMembersHandler}
-            isCumulative={
-              selectedCommittee && selectedCommittee.tokenType.unique
-            }
-          />
-        )
-      default:
-        return null
-    }
-  }
-  // const clickCommitteeHandler = index => {
-  //   setNavigationItems([...navigationItems, committees[index].name])
-  //   setSelectedCommittee(index)
-  //   setSidePanelTitle(SP_NEW_MEMBER)
-  // }
-
-  const createCommitteeHandler = ({
-    name,
-    description,
-    votingParams,
-    tokenParams,
-    tokenSymbol,
-    addresses,
-    stakes,
-  }) => {
-    setSidePanelOpened(false)
-    const { transferable, unique } = tokenParams
-    const { support, acceptance, duration } = votingParams
-    api
-      .createCommittee(
-        utf8ToHex(name),
-        description,
-        tokenSymbol,
-        [transferable, unique],
-        addresses,
-        stakes,
-        [support, acceptance, duration]
-      )
-      .subscribe(
-        () => {
-          console.log('Create committee transaction completed!!!')
-        },
-        err => {
-          console.log(err)
-        }
-      )
-  }
-
-  const createMembersHandler = members => {
-    console.log(members)
-    /* api
-      .addMember(committees[selectedCommittee].address, memberAddress)
-      .subscribe(() => {
-        console.log('Transaction completed!')
-      }) */
-    setSidePanelOpened(false)
-  }
-
-  const removeMemberHandler = memberAddress => {
-    setSidePanelOpened(false)
-    api
-      .removeMember(committees[selectedCommittee].address, memberAddress)
-      .subscribe(() => {
-        console.log('Transaction completed!')
-      })
-  }
   const clickCommitteeHandler = committee => {
     setSelectedCommittee(committee)
     setScreenName('info')
@@ -164,72 +94,79 @@ function App() {
 
   return (
     <React.Fragment>
-      <BaseStyles />
-      {committees && committees.length === 0 && (
-        <div
-          css={`
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          `}
-        >
-          <NoCommittees
-            onNewCommittee={() => {
-              setSidePanelOpened(true)
-            }}
-            isSyncing={false}
-          />
-        </div>
-      )}
-      {committees && committees.length > 0 && (
-        <React.Fragment>
-          <Header
-            primary={
-              <React.Fragment>
-                <span
-                  css={`
-                    ${textStyle('title2')}
-                  `}
-                >
-                  Committees{selectedCommittee ? ':' : ''}
-                </span>
-                {selectedCommittee ? (
+      <PanelContext.Provider value={panelConfiguration}>
+        <BaseStyles />
+        {committees && committees.length === 0 && (
+          <NoCommitteesLayout>
+            <NoCommittees
+              onNewCommittee={() => {
+                const { setupNewCommittee } = usePanelManagement()
+                setPanel(setupNewCommittee())
+              }}
+              isSyncing={false}
+            />
+          </NoCommitteesLayout>
+        )}
+        {committees && committees.length > 0 && (
+          <React.Fragment>
+            <Header
+              primary={
+                <React.Fragment>
                   <span
                     css={`
-                      margin-left: 7px;
-                      position: relative;
-                      top: 1px;
-                      color: ${theme.surfaceContentSecondary};
-                      font-weight: bold;
-                      ${textStyle('title3')}
+                      ${textStyle('title2')}
                     `}
                   >
-                    {selectedCommittee.name}
+                    Committees{selectedCommittee ? ':' : ''}
                   </span>
-                ) : null}
-              </React.Fragment>
-            }
-            secondary={<ScreenAction />}
-          />
-          {selectedCommittee ? (
-            <CommitteeDetails
-              committee={selectedCommittee}
-              onBack={backHandler}
-              onChangeTab={changeTabHandler}
+                  {selectedCommittee ? (
+                    <span
+                      css={`
+                        margin-left: 7px;
+                        position: relative;
+                        top: 1px;
+                        color: ${theme.surfaceContentSecondary};
+                        font-weight: bold;
+                        ${textStyle('title3')}
+                      `}
+                    >
+                      {selectedCommittee.name}
+                    </span>
+                  ) : null}
+                </React.Fragment>
+              }
+              secondary={<ScreenAction />}
             />
-          ) : (
-            <Committees
-              committees={committees}
-              onClickCommittee={clickCommitteeHandler}
-            />
-          )}
-        </React.Fragment>
-      )}
-      <SidePanelScreen />
+            {selectedCommittee ? (
+              <CommitteeDetails
+                committee={selectedCommittee}
+                onBack={backHandler}
+                onChangeTab={changeTabHandler}
+              />
+            ) : (
+              <Committees
+                committees={committees}
+                onClickCommittee={clickCommitteeHandler}
+              />
+            )}
+          </React.Fragment>
+        )}
+        <PanelManager
+          activePanel={panel}
+          onClose={closePanel}
+          {...panelProps}
+        />
+      </PanelContext.Provider>
     </React.Fragment>
   )
 }
+
+const NoCommitteesLayout = styled.div`
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
 
 const Syncing = styled.div.attrs({ children: 'Syncing…' })`
   position: absolute;

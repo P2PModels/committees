@@ -19,7 +19,7 @@ const ParamDetail = ({ children }) => {
 }
 // Support, acceptance and duration are props so we dont need to maintain state in this component
 // AND parent component.
-const votingTypeField = ({ votingTypes, votingParams, onChange }) => {
+const votingTypeField = ({ votingTypes, votingParams, onChange, textSize }) => {
   console.log('Rendering VotingTypeField component')
   const [votingTypeIndex, setVotingTypeIndex] = useState(0)
   const isCustom = votingTypeIndex === votingTypes.length - 1
@@ -33,7 +33,18 @@ const votingTypeField = ({ votingTypes, votingParams, onChange }) => {
     onChange({ support, acceptance, duration, [name]: value })
   }
 
-  const votingTypesName = votingTypes.map(({ name }) => name)
+  const votingTypesName = votingTypes.map(({ name }) => (
+    <span
+      css={
+        textSize &&
+        `
+        ${textSize}
+      `
+      }
+    >
+      {name}
+    </span>
+  ))
 
   const { support, acceptance, duration } = isCustom
     ? votingParams

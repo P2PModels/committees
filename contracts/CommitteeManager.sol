@@ -19,7 +19,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     event CreateCommittee(address indexed committeeAddress, address indexed votingAddress, bytes32 name, string description,
     bool[2] tokenParams, address[] initialMembers, uint256[] stakes, uint64[3] votingParams);
     event RemoveCommittee(address indexed committeeAddress);
-    event AddMember(address indexed committeeAddress, address member);
+    event AddMembers(address indexed committeeAddress, address[] members, uint256[] stakes);
     event RemoveMember(address indexed committeeAddress, address member);
     event AddPermission(address indexed committeeAddress, address app, bytes32 appName, bytes32 role);
     event RemovePermission(address indexed committeeAddress, address app, bytes32 appName, bytes32 role);
@@ -50,6 +50,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     string private constant ERROR_COMMITTEE_EXISTS = "COMMITTEE_ALREADY_ADDED";
     string private constant ERROR_MEMBER_MISSING = "MEMBER_DONT_EXIST";
     string private constant ERROR_MEMBER_EXISTS = "MEMBER_ALREADY_ADDED";
+    string private constant ERROR_MEMBER_STAKES_NOT_EQUAL = "MEMBER_STAKES_NOT_EQUAL";
     string private constant ERROR_MINIME_FACTORY_NOT_CONTRACT = "MINIME_FACTORY_NOT_CONTRACT";
     string private constant ERROR_ENS_NOT_CONTRACT = "ENS_NOT_CONTRACT";
     string private constant ERROR_ENTITY_NOT_CONTRACT = "ENTITY_NOT_CONTRACT";
@@ -57,6 +58,18 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
     modifier committeeExists(address _committee) {
         require(committees[_committee].tokenManagerAppAddress != address(0), ERROR_COMMITTEE_MISSING);
+        _;
+    }
+
+    modifier membersExists(address _committee, address[] _members, uint256[] _stakes) {
+        TokenManager tm = TokenManager(committees[_committee].tokenManagerAppAddress);
+
+        require(_members.length == _stakes.length, ERROR_MEMBER_STAKES_NOT_EQUAL);
+
+        for (uint256 i = 0; i < _members.length; i++) {
+            if (tm.token().balanceOf(_members[i]) > 0)
+                revert(ERROR_MEMBER_EXISTS);
+        }
         _;
     }
 
@@ -101,24 +114,25 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Add `_member` to the committee `_committee`.
+     * @notice Add new members to the committee `_committee`.
      * @param _committee Committee's address.
-     * @param _member The new member address.
-     * @param _stake  The new member token stakes.
+     * @param _members The new members addresses.
+     * @param _stakes  The new members token stakes.
      */
-    function addMember(
+    function addMembers(
         address _committee,
-        address _member,
-        uint256 _stake
+        address[] _members,
+        uint256[] _stakes
     )
         external
         committeeExists(_committee)
+        membersExists(_committee, _members, _stakes)
         auth(EDIT_COMMITTEE_MEMBERS_ROLE)
     {
         address tmAddress = committees[_committee].tokenManagerAppAddress;
-        _mintTokens(TokenManager(tmAddress), _member, _stake);
 
-        emit AddMember(_committee, _member);
+        _mintTokens(TokenManager(tmAddress), _members, _stakes);
+        emit AddMembers(_committee, _members, _stakes);
     }
 
     /**
@@ -217,9 +231,9 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         _grantTokenManagerPermissions(acl, tokenManager, entity);
 
         if (_tokenParams[1])
-            _mintTokens(acl, tokenManager, _initialMembers, 1);
+            _mintTokens(tokenManager, _initialMembers, 1);
         else
-            _mintTokens(acl, tokenManager, _initialMembers, _stakes);
+            _mintTokens(tokenManager, _initialMembers, _stakes);
 
         Voting voting = _installVotingApp(_dao, token, _votingParams[0] * PCT, _votingParams[1] * PCT, _votingParams[2] * 1 days);
         //Only token holders can open a vote.

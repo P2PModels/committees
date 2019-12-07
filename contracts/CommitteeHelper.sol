@@ -86,13 +86,13 @@ contract CommitteeHelper is APMNamehash, IsContract {
         _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.BURN_ROLE());
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
+    function _mintTokens(TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
         for (uint256 i = 0; i < _holders.length; i++) {
             _tokenManager.mint(_holders[i], _stakes[i]);
         }
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256 _stake) internal {
+    function _mintTokens(TokenManager _tokenManager, address[] _holders, uint256 _stake) internal {
         for (uint256 i = 0; i < _holders.length; i++) {
             _tokenManager.mint(_holders[i], _stake);
         }

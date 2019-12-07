@@ -1,9 +1,15 @@
+import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, unselectable } from '@aragon/ui'
+import { useTheme, unselectable } from '@aragon/ui'
 
-const FieldTitle = styled.label`
+const FieldTitle = () => {
+  const theme = useTheme()
+
+  return <StyledFieldTitle theme={theme.contentSecondary} />
+}
+const StyledFieldTitle = styled.label`
   ${unselectable};
-  color: ${theme.textSecondary};
+  color: ${props => props.theme.textSecondary};
   text-transform: lowercase;
   font-variant: small-caps;
   font-weight: bold;

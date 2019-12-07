@@ -29,6 +29,8 @@ export const DEFAULT_VOTING_TYPES = [
   { name: 'Custom Voting', support: 0, acceptance: 0, duration: 0 },
 ]
 
+export const DEFAULT_MEMBER = ['', -1]
+
 export function getTokenType(tokenParams) {
   const [transferable, unique] = tokenParams
   const name =
@@ -101,12 +103,12 @@ function validateDuplicateAddresses(members, validateAddress) {
   return validAddresses.length === new Set(validAddresses).size
 }
 
-export function validateMembers(members, membership) {
+export function validateMembers(members, isMembership) {
   if (!members.some(([address]) => isAddress(address)))
     return 'You need at least one valid address.'
 
   if (
-    !membership &&
+    !isMembership &&
     !members.some(([address, stake]) => isAddress(address) && stake > 0)
   ) {
     return 'You need at least one valid address with a positive balance.'
@@ -117,25 +119,39 @@ export function validateMembers(members, membership) {
   }
 }
 
+export function decoupleMembers(members, isUnique = true) {
+  const addresses = members.map(member => member[0])
+  const stakes = members.map(member => (isUnique ? 1 : member[1]))
+
+  return [addresses, stakes]
+}
+
 export function validateVotingParams(support, acceptance, duration) {
   const votingErrors = []
-  if (isNaN(support) || support < 1 || support >= 100)
-    votingErrors.push('Support must be a value between 1 and 99')
+  try {
+    support = parseInt(support)
+    acceptance = parseInt(acceptance)
+    duration = parseInt(duration)
 
-  if (
-    isNaN(acceptance) ||
-    acceptance < 1 ||
-    acceptance > support ||
-    acceptance >= 100
-  ) {
-    votingErrors.push(
-      'Acceptance must be greater than 1 and less than support value'
-    )
+    if (isNaN(support) || support < 1 || support >= 100)
+      votingErrors.push('Support must be a value between 1 and 99')
+
+    if (
+      isNaN(acceptance) ||
+      acceptance < 1 ||
+      acceptance > support ||
+      acceptance >= 100
+    ) {
+      votingErrors.push(
+        'Acceptance must be greater than 1 and less than support value'
+      )
+    }
+
+    if (isNaN(duration) || duration < 1 || duration > 360) {
+      votingErrors.push('Duration must be greater than 1 and less than 360')
+    }
+  } catch (err) {
+    votingErrors.push('Please enter a number.')
   }
-
-  if (isNaN(duration) || duration < 1 || duration > 360) {
-    votingErrors.push('Duration must be greater than 1 and less than 360')
-  }
-
   return votingErrors
 }

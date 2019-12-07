@@ -1,16 +1,19 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useAragonApi } from '@aragon/api-react'
+import { utf8ToHex } from 'web3-utils'
 
 import { Form, FormField } from '../../Form'
 import {
-  SidePanel,
   Text,
   Tag,
   TextInput,
   DropDown,
   useSidePanelFocusOnReady,
+  textStyle,
 } from '@aragon/ui'
 
+import { usePanelManagement } from '../../SidePanels'
 import VotingTypeField from './VotingTypeField/VotingTypeField'
 import MembersField from '../../Form/MembersField/MembersField'
 
@@ -18,9 +21,11 @@ import {
   DEFAULT_VOTING_TYPES,
   DEFAULT_TOKEN_TYPES,
   validateMembers,
+  decoupleMembers,
   validateVotingParams,
 } from '../../../lib/committee-utils'
 import { getTokenSymbol } from '../../../lib/token-utils'
+import { from } from 'rxjs'
 
 const DEFAULT_VOTING_PARAMS = { ...DEFAULT_VOTING_TYPES[0] }
 
@@ -34,20 +39,10 @@ const tokenTypes = DEFAULT_TOKEN_TYPES.map(types => {
   )
 })
 
-const NewCommitteePanel = React.memo(({ panelState, onCreateCommittee }) => {
-  return (
-    <SidePanel
-      title="New Committeee"
-      opened={panelState.opened}
-      onClose={panelState.onClose}
-    >
-      <NewCommitteePanelContent onCreateCommittee={onCreateCommittee} />
-    </SidePanel>
-  )
-})
-
-const NewCommitteePanelContent = ({ onCreateCommittee }) => {
+const NewCommitteePanel = React.memo(() => {
   console.log('Rendering New Committee Panel...')
+  const { api } = useAragonApi()
+  const { closePanel } = usePanelManagement()
   const [error, setError] = useState({})
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -58,14 +53,39 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
   const { support, acceptance, duration } = votingParams
 
   const inputRef = useSidePanelFocusOnReady()
-  const clearPanel = useCallback(() => {
-    setError({})
-    setName('')
-    setDescription('')
-    setTokenType(0)
-    setVotingParams({ ...DEFAULT_VOTING_PARAMS })
-    setMembers(['', -1])
-  }, [])
+  const customFieldTextStyle = textStyle('body3')
+
+  const createCommittee = ({
+    name,
+    description,
+    votingParams,
+    tokenParams,
+    tokenSymbol,
+    addresses,
+    stakes,
+  }) => {
+    const { transferable, unique } = tokenParams
+    const { support, acceptance, duration } = votingParams
+    closePanel()
+    api
+      .createCommittee(
+        utf8ToHex(name),
+        description,
+        tokenSymbol,
+        [transferable, unique],
+        addresses,
+        stakes,
+        [support, acceptance, duration]
+      )
+      .subscribe(
+        () => {
+          console.log('Create committee transaction completed!!!')
+        },
+        err => {
+          console.log(err)
+        }
+      )
+  }
 
   const handleSubmit = () => {
     const error = {}
@@ -87,9 +107,8 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
     if (Object.keys(error).length) {
       setError({ ...error })
     } else {
-      const addresses = members.map(member => member[0])
-      const stakes = members.map(member => (isUnique ? 1 : member[1]))
-      onCreateCommittee({
+      const [addresses, stakes] = decoupleMembers(members, isUnique)
+      createCommittee({
         name,
         description,
         votingParams,
@@ -98,7 +117,6 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
         addresses,
         stakes,
       })
-      clearPanel()
     }
   }
 
@@ -170,14 +188,6 @@ const NewCommitteePanelContent = ({ onCreateCommittee }) => {
       />
     </Form>
   )
-}
-
-NewCommitteePanelContent.propTypes = {
-  onCreateCommittee: PropTypes.func,
-}
-
-NewCommitteePanelContent.propTypes = {
-  onCreateCommittee: () => {},
-}
+})
 
 export default NewCommitteePanel
