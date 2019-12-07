@@ -214,8 +214,8 @@ CommitteeInfo.propTypes = {
     name: PropTypes.string,
     description: PropTypes.string,
     address: PropTypes.string,
-    tokenParams: PropTypes.object,
-    votingParams: PropTypes.object,
+    tokenParams: PropTypes.array,
+    votingParams: PropTypes.array,
   }),
 }
 
