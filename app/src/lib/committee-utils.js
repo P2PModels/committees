@@ -32,7 +32,7 @@ export const DEFAULT_VOTING_TYPES = [
 export const DEFAULT_MEMBER = ['', -1]
 
 export function getTokenType(tokenParams) {
-  const [unique, transferable ] = tokenParams
+  const [unique, transferable] = tokenParams
   const name =
     !transferable && !unique
       ? 'Reputation'
@@ -120,8 +120,12 @@ export function validateMembers(members, isMembership) {
 }
 
 export function decoupleMembers(members, isUnique = true) {
-  const addresses = members.filter(member => member[0] && member[0]).map(member => member[0])
-  const stakes = members.filter((member, index) => index < addresses.length).map(member => (isUnique ? 1 : member[1]))
+  const addresses = members
+    .filter(member => member[0] && member[0])
+    .map(member => member[0])
+  const stakes = members
+    .filter((member, index) => index < addresses.length)
+    .map(member => (isUnique ? 1 : member[1]))
 
   return [addresses, stakes]
 }

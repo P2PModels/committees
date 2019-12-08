@@ -110,7 +110,7 @@ contract Template is TemplateBase {
         acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
 
         acl.createPermission(this, app, app.CREATE_COMMITTEE_ROLE(), this);
-   
+
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.DELETE_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_MEMBERS_ROLE(), voting);
@@ -143,7 +143,7 @@ contract Template is TemplateBase {
 
         emit DeployInstance(dao);
     }
-    
+
     function createMembershipCommittee(CommitteeManager app) internal {
         bool[2] memory tokenParams = [false, true];
         address[] memory initialMembers = new address[](2);
@@ -171,7 +171,7 @@ contract Template is TemplateBase {
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
         stakes[0] = 1;
         uint64[3] memory votingParams = [uint64(50), 15, 30];
-        app.createCommittee(
+        app.createFinancialCommittee(
             hex"00426f756e7469657320436f6d6d6974746565", // Bounties Committee
             "This a sample description nothing important to see here",
             "BCT",
@@ -189,7 +189,7 @@ contract Template is TemplateBase {
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
         stakes[0] = 1;
         uint64[3] memory votingParams = [uint64(50), 50, 30];
-        app.createCommittee(
+        app.createFinancialCommittee(
             hex"0046696e616e636520436f6d6d6974746565", // Finance Committee
             "This a sample description nothing important to see here",
             "FCT",

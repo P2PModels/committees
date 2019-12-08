@@ -69,7 +69,7 @@ api.store(async (state, { event, returnValues }) => {
         minAcceptQuorumPct / 10 ** 16,
         voteTime / (60 * 60 * 24),
       ]
-  
+
       const initialMembers = []
       const stakes = []
       nextState = {

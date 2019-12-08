@@ -2,7 +2,9 @@ pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
+import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
+import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
@@ -27,15 +29,18 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     /// Types
     struct Committee {
         bytes32 name;
-        string description;
-        address tokenManagerAppAddress;
-        address votingAppAddress;
+        address voting;
+        address finance;
     }
 
     /// State
     mapping(address => Committee) committees;
     //Entity that manages committees apps permissions.
-    Voting internal entity;
+    address internal manager;
+
+    // Constants
+    uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
+    address constant private NO_FINANCE = address(0);
 
     /// ACL
     bytes32 constant public CREATE_COMMITTEE_ROLE = keccak256("CREATE_COMMITTEE_ROLE");
@@ -56,12 +61,12 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
 
     modifier committeeExists(address _committee) {
-        require(committees[_committee].tokenManagerAppAddress != address(0), ERROR_COMMITTEE_MISSING);
+        require(committees[_committee].voting != address(0), ERROR_COMMITTEE_MISSING);
         _;
     }
 
     modifier membersExists(address _committee, address[] _members, uint256[] _stakes) {
-        TokenManager tm = TokenManager(committees[_committee].tokenManagerAppAddress);
+        TokenManager tm = TokenManager(_committee);
 
         require(_members.length == _stakes.length, ERROR_MEMBER_STAKES_NOT_EQUAL);
 
@@ -73,16 +78,16 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     modifier memberExists(address _committee, address _member) {
-        TokenManager tm = TokenManager(committees[_committee].tokenManagerAppAddress);
+        TokenManager tm = TokenManager(_committee);
         require(tm.token().balanceOf(_member) > 0, ERROR_MEMBER_MISSING);
         _;
     }
 
-    function initialize(MiniMeTokenFactory _miniMeTokenFactory, ENS _ens, Voting _entity) public onlyInit {
+    function initialize(MiniMeTokenFactory _miniMeTokenFactory, ENS _ens, address _manager) public onlyInit {
         initialized();
         ens = _ens;
         miniMeFactory = _miniMeTokenFactory;
-        entity = _entity;
+        manager = _manager;
     }
 
     /**
@@ -103,12 +108,36 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         uint256[] _stakes,
         uint64[3] _votingParams
     )
-    external auth(CREATE_COMMITTEE_ROLE)
+        external auth(CREATE_COMMITTEE_ROLE)
     {
-        address[2] memory apps; // 0: token manager; 1: voting
-        apps = _createCommitteeApps(_tokenSymbol, _initialMembers, _votingParams, _tokenParams, _stakes);
+        address[2] memory apps = _installCommitteeApps(_tokenSymbol, _initialMembers, _votingParams, _tokenParams, _stakes);
+        committees[apps[0]] = Committee(_name, apps[1], NO_FINANCE);
+        emit CreateCommittee(apps[0], apps[1], _name, _description);
+    }
 
-        committees[apps[0]] = Committee(_name, _description, apps[0], apps[1]);
+    /**
+     * @notice Create a new financial committee.
+     * @param _name The name of the committee.
+     * @param _description The description of the committee.
+     * @param _tokenSymbol Committee's token symbol.
+     * @param _tokenParams Token configuration (transferable and cumulative)
+     * @param  _initialMembers Committee's initial member addresses.
+     * @param _votingParams Voting configuration (approval percentage, quorum percentage and duration).
+     */
+    function createFinancialCommittee(
+        bytes32 _name,
+        string _description,
+        string _tokenSymbol,
+        bool[2] _tokenParams,
+        address[] _initialMembers,
+        uint256[] _stakes,
+        uint64[3] _votingParams
+    )
+        external auth(CREATE_COMMITTEE_ROLE)
+    {
+        address[2] memory apps = _installCommitteeApps(_tokenSymbol, _initialMembers, _votingParams, _tokenParams, _stakes);
+        committees[apps[0]] = Committee(_name, apps[1], NO_FINANCE);
+        _installFinanceApps(apps[0], apps[1]);
         emit CreateCommittee(apps[0], apps[1], _name, _description);
     }
 
@@ -128,9 +157,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         membersExists(_committee, _members, _stakes)
         auth(EDIT_COMMITTEE_MEMBERS_ROLE)
     {
-        address tmAddress = committees[_committee].tokenManagerAppAddress;
-
-        _mintTokens(TokenManager(tmAddress), _members, _stakes);
+        _mintTokens(TokenManager(_committee), _members, _stakes);
         emit AddMembers(_committee, _members, _stakes);
     }
 
@@ -148,10 +175,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         memberExists(_committee, _member)
         auth(EDIT_COMMITTEE_MEMBERS_ROLE)
     {
-        address tmAddress = committees[_committee].tokenManagerAppAddress;
-
-        _burnTokens(TokenManager(tmAddress), _member, 1);
-
+        _burnTokens(TokenManager(_committee), _member, 1);
         emit RemoveMember(_committee, _member);
     }
 
@@ -161,10 +185,9 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
      * @param _committee Committee's members addreses.
      */
     function removeCommittee(address _committee, address[] _members) external auth(DELETE_COMMITTEE_ROLE) {
-        address tmAddress = committees[_committee].tokenManagerAppAddress;
         //Delete all members
-        _burnTokens(TokenManager(tmAddress), _members, 1);
-        delete committees[tmAddress];
+        _burnTokens(TokenManager(_committee), _members, 1);
+        delete committees[_committee];
 
         emit RemoveCommittee(_committee);
     }
@@ -182,9 +205,8 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         bytes32 _appName,
         bytes32 _role
     )
-    external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE)
+        external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE)
     {
-        require(committees[_committee].tokenManagerAppAddress != address(0), "The committee doesn't exist");
 
         //...
 
@@ -203,9 +225,8 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         bytes32 _appName,
         bytes32 _role
     )
-    external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE)
+        external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE)
     {
-        require(committees[_committee].tokenManagerAppAddress != address(0), "The committee doesnt't exist");
 
         //...
     }
@@ -213,21 +234,21 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     /**
      * @dev It creates a new TokenManager and Voting app for the new committee.
      */
-    function _createCommitteeApps(
+    function _installCommitteeApps(
         string _committeeTokenSymbol,
         address[] _initialMembers,
         uint64[3] _votingParams,
         bool[2] _tokenParams,
         uint256[] _stakes
     )
-    internal returns (address[2] memory apps)
+        internal returns (address[2] memory apps)
     {
         Kernel _dao = Kernel(kernel());
         ACL acl = ACL(_dao.acl());
         MiniMeToken token = _createToken(string(abi.encodePacked(_committeeTokenSymbol, " Token")), _committeeTokenSymbol, 0);
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, _tokenParams);
         _createTokenManagerPermissions(acl, tokenManager, this, this);
-        _grantTokenManagerPermissions(acl, tokenManager, entity);
+        _grantTokenManagerPermissions(acl, tokenManager, manager);
 
         if (_tokenParams[1])
             _mintTokens(tokenManager, _initialMembers, 1);
@@ -236,10 +257,21 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
         Voting voting = _installVotingApp(_dao, token, _votingParams[0] * PCT, _votingParams[1] * PCT, _votingParams[2] * 1 days);
         //Only token holders can open a vote.
-        _createVotingPermissions(acl, voting, entity, entity);
-        _changeTokenManagerPermissionManager(acl, tokenManager, entity);
+        _createVotingPermissions(acl, voting, manager, manager);
+        _changeTokenManagerPermissionManager(acl, tokenManager, manager);
 
         apps[0] = address(tokenManager);
         apps[1] = address(voting);
+    }
+
+    function _installFinanceApps(address _committee, address _grantee) internal {
+        Kernel _dao = Kernel(kernel());
+        ACL acl = ACL(_dao.acl());
+        Vault vault = _installNonDefaultVaultApp(_dao);
+        Finance finance = _installFinanceApp(_dao, vault, DEFAULT_FINANCE_PERIOD);
+        _createVaultPermissions(acl, vault, finance, manager);
+        _createFinancePermissions(acl, finance, _grantee, manager);
+        _createFinanceCreatePaymentsPermission(acl, finance, _grantee, manager);
+        committees[_committee].finance = finance;
     }
 }

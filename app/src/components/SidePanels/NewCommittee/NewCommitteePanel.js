@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
 import { useAragonApi } from '@aragon/api-react'
 import { utf8ToHex } from 'web3-utils'
 
@@ -9,7 +8,10 @@ import {
   Tag,
   TextInput,
   DropDown,
+  Checkbox,
+  GU,
   useSidePanelFocusOnReady,
+  useTheme,
   textStyle,
 } from '@aragon/ui'
 
@@ -25,7 +27,6 @@ import {
   validateVotingParams,
 } from '../../../lib/committee-utils'
 import { getTokenSymbol } from '../../../lib/token-utils'
-import { from } from 'rxjs'
 
 const DEFAULT_VOTING_PARAMS = { ...DEFAULT_VOTING_TYPES[0] }
 
@@ -39,22 +40,10 @@ const tokenTypes = DEFAULT_TOKEN_TYPES.map(types => {
   )
 })
 
-const NewCommitteePanel = React.memo(() => {
-  console.log('Rendering New Committee Panel...')
-  const { api } = useAragonApi()
-  const { closePanel } = usePanelManagement()
-  const [error, setError] = useState({})
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [tokenType, setTokenType] = useState(0)
-  const [votingParams, setVotingParams] = useState({ ...DEFAULT_VOTING_PARAMS })
-  const [members, setMembers] = useState([['', -1]])
-  const isUnique = DEFAULT_TOKEN_TYPES[tokenType].unique
-  const { support, acceptance, duration } = votingParams
-
-  const inputRef = useSidePanelFocusOnReady()
-
-  const createCommittee = ({
+const createCommittee = (
+  api,
+  closePanel,
+  {
     name,
     description,
     votingParams,
@@ -62,30 +51,43 @@ const NewCommitteePanel = React.memo(() => {
     tokenSymbol,
     addresses,
     stakes,
-  }) => {
-    const { transferable, unique } = tokenParams
-    const { support, acceptance, duration } = votingParams
-    console.log(transferable, unique)
-    closePanel()
-    api
-      .createCommittee(
-        utf8ToHex(name),
-        description,
-        tokenSymbol,
-        [transferable, unique],
-        addresses,
-        stakes,
-        [support, acceptance, duration]
-      )
-      .subscribe(
-        () => {
-          console.log('Create committee transaction completed!!!')
-        },
-        err => {
-          console.log(err)
-        }
-      )
+    finance,
   }
+) => {
+  const { transferable, unique } = tokenParams
+  const { support, acceptance, duration } = votingParams
+  const params = [
+    utf8ToHex(name),
+    description,
+    tokenSymbol,
+    [transferable, unique],
+    addresses,
+    stakes,
+    [support, acceptance, duration],
+  ]
+  if (finance) {
+    api.createFinancialCommittee(...params).subscribe(closePanel)
+  } else {
+    api.createCommittee(...params).subscribe(closePanel)
+  }
+}
+
+const NewCommitteePanel = React.memo(() => {
+  console.log('Rendering New Committee Panel...')
+  const { api } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  const theme = useTheme()
+  const [error, setError] = useState({})
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [tokenType, setTokenType] = useState(0)
+  const [votingParams, setVotingParams] = useState({ ...DEFAULT_VOTING_PARAMS })
+  const [finance, enableFinance] = useState(false)
+  const [members, setMembers] = useState([['', -1]])
+  const isUnique = DEFAULT_TOKEN_TYPES[tokenType].unique
+  const { support, acceptance, duration } = votingParams
+
+  const inputRef = useSidePanelFocusOnReady()
 
   const handleSubmit = () => {
     const error = {}
@@ -108,7 +110,7 @@ const NewCommitteePanel = React.memo(() => {
       setError({ ...error })
     } else {
       const [addresses, stakes] = decoupleMembers(members, isUnique)
-      createCommittee({
+      createCommittee(api, closePanel, {
         name,
         description,
         votingParams,
@@ -116,6 +118,7 @@ const NewCommitteePanel = React.memo(() => {
         tokenSymbol: getTokenSymbol(name, true),
         addresses,
         stakes,
+        finance,
       })
     }
   }
@@ -172,6 +175,29 @@ const NewCommitteePanel = React.memo(() => {
             votingParams={votingParams}
             onChange={setVotingParams}
           />
+        }
+      />
+      <FormField
+        label="Finance"
+        input={
+          <label
+            css={`
+              display: flex;
+              align-items: center;
+              margin-top: ${GU}px;
+              color: ${theme.surfaceContent};
+            `}
+          >
+            <Checkbox checked={finance} onChange={enableFinance} />
+            <span
+              css={`
+                margin-left: ${0.5 * GU}px;
+                ${textStyle('label3')}
+              `}
+            >
+              Enable finance
+            </span>
+          </label>
         }
       />
       <FormField

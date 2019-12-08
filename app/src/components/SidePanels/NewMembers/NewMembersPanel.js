@@ -24,13 +24,11 @@ const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
   const inputRef = useSidePanelFocusOnReady()
 
   const createMembers = (committeeAddress, addresses, stakes) => {
-    closePanel()    
-    api
-      .addMembers(committeeAddress, addresses, stakes)
-      .subscribe(
-        () => console.log('New members transaction completed'),
-        err => console.log(err)
-      )
+    closePanel()
+    api.addMembers(committeeAddress, addresses, stakes).subscribe(
+      () => console.log('New members transaction completed'),
+      err => console.log(err)
+    )
   }
   const changeMembers = members => {
     setMembers(members)

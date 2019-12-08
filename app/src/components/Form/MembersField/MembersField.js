@@ -124,7 +124,7 @@ const MembersField = React.forwardRef(
 
 const InnerLabel = styled.div`
   text-transform: capitalize;
-  ${textStyle('body3')}
+  ${textStyle('label3')}
 `
 
 MembersField.propTypes = {
