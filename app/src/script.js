@@ -41,6 +41,7 @@ api.store(async (state, { event, returnValues }) => {
         description,
       } = returnValues
       const tm = api.external(address, tmAbi)
+      //Get token info
       const [tokenAddress, maxAccountTokens] = await Promise.all([
         tm.token().toPromise(),
         tm.maxAccountTokens().toPromise(),
@@ -51,6 +52,7 @@ api.store(async (state, { event, returnValues }) => {
         token.decimals().toPromise(),
         token.transfersEnabled().toPromise(),
       ])
+      //Get voting info
       const voting = api.external(votingAddress, votingAbi)
       const [
         supportRequiredPct,
@@ -63,7 +65,7 @@ api.store(async (state, { event, returnValues }) => {
       ])
 
       const isUnique = maxAccountTokens === '1' && decimals === '0'
-      const tokenParams = [isUnique, isTransferable]
+      const tokenParams = [isTransferable, isUnique]
       const votingParams = [
         supportRequiredPct / 10 ** 16,
         minAcceptQuorumPct / 10 ** 16,
@@ -95,19 +97,6 @@ api.store(async (state, { event, returnValues }) => {
         committees: deleteCommittee(
           state.committees,
           returnValues.committeeAddress
-        ),
-      }
-      break
-    case 'RemoveMember':
-    case 'AddMember':
-      const { member } = returnValues
-      nextState = {
-        ...state,
-        committees: updateCommitteesMembers(
-          state.committees,
-          returnValues.committeeAddress,
-          member,
-          event === 'AddMember'
         ),
       }
       break

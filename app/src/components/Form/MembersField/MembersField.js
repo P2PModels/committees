@@ -74,7 +74,7 @@ const MembersField = React.forwardRef(
       )
     }
 
-    const fixedStake = accountStake !== -1
+    const fixedStake = accountStake === 1
 
     return (
       <Field

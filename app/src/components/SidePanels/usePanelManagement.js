@@ -12,9 +12,13 @@ const usePanelManagement = () => {
       setActivePanel(PANELS.NewCommitteePanel)
       setPanelProps({ title: 'New Committee' })
     },
-    setupNewMembers: (committeeAddress, isCumulative) => {
+    setupNewMembers: (committeeAddress, isUnique) => {
       setActivePanel(PANELS.NewMembersPanel)
-      setPanelProps({ title: 'New Members', committeeAddress, isCumulative })
+      setPanelProps({
+        title: 'New Members',
+        committeeAddress,
+        isUnique
+      })
     },
   }
 }
