@@ -41,7 +41,6 @@ function App() {
     setPanelProps(null)
   }
 
-  console.log(committees)
   const ScreenAction = () => {
     const { setupNewCommittee, setupNewMembers } = usePanelManagement()
 
@@ -58,12 +57,13 @@ function App() {
         return (
           <Button
             mode="strong"
-            onClick={() =>
-              setupNewMembers(
-                selectedCommittee && selectedCommittee.address,
-                selectedCommittee && selectedCommittee.tokenParams[0]
-              )
-            }
+            onClick={() => {
+              if (selectedCommittee)
+                setupNewMembers(
+                  selectedCommittee.address,
+                  selectedCommittee.tokenParams[1]
+                )
+            }}
             label="New Member"
           />
         )

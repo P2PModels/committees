@@ -21,7 +21,7 @@ const tabs = [
 ]
 
 const CommitteeDetails = React.memo(
-  ({ committee, onBack, onChangeTab }) => {
+  ({ committee, onBack, onChangeTab, }) => {
     console.log('CommitteeDetails rerendering')
     const [activeTabIndex, setActiveTabIndex] = useState(0)
 

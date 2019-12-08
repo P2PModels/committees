@@ -15,7 +15,7 @@ import {
 } from '../../../lib/committee-utils'
 import { isAddress } from 'web3-utils'
 
-const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
+const NewMembersPanel = ({ committeeAddress, isUnique }) => {
   const { api } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const [error, setError] = useState({})
@@ -23,14 +23,10 @@ const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
 
   const inputRef = useSidePanelFocusOnReady()
 
-  const createMembers = (committeeAddress, addresses, stakes) => {
-    closePanel()    
-    api
-      .addMembers(committeeAddress, addresses, stakes)
-      .subscribe(
-        () => console.log('New members transaction completed'),
-        err => console.log(err)
-      )
+  const createMembers = async (committeeAddress, addresses, stakes) => {
+    closePanel()   
+    console.log(`Creating member ${addresses} with stakes ${stakes} on ${committeeAddress}`) 
+    await api.addMembers(committeeAddress, addresses, stakes).toPromise()
   }
   const changeMembers = members => {
     setMembers(members)
@@ -43,7 +39,7 @@ const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
 
     if (Object.keys(error).length) setError({ ...error })
     else {
-      createMembers(committeeAddress, ...decoupleMembers(members, isCumulative))
+      createMembers(committeeAddress, ...decoupleMembers(members, isUnique))
     }
   }
 
@@ -56,7 +52,7 @@ const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
         input={
           <MembersField
             ref={inputRef}
-            accountStake={isCumulative ? 1 : -1}
+            accountStake={isUnique ? 1 : -1}
             members={members}
             onChange={changeMembers}
           />
@@ -68,7 +64,7 @@ const NewMembersPanel = ({ committeeAddress, isCumulative }) => {
 
 NewMembersPanel.propTypes = {
   committeeAddress: PropTypes.string.isRequired,
-  isCumulative: PropTypes.bool.isRequired,
+  isUnique: PropTypes.bool.isRequired,
 }
 
 export default NewMembersPanel

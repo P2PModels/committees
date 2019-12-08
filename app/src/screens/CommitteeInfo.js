@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react'
-import { useNetwork } from '@aragon/api-react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useAragonApi, useNetwork } from '@aragon/api-react'
+
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { getTokenName } from '../lib/token-utils'
@@ -20,26 +21,71 @@ import {
   GU,
 } from '@aragon/ui'
 
+import { map } from 'rxjs/operators'
+
+import tmAbi from '../abi/TokenManager.json'
+import tokenAbi from '../abi/minimeToken.json'
+
+async function getToken(api, tmAddress) {
+  const tm = api.external(tmAddress, tmAbi)
+  const tokenAddress = await tm.token().toPromise()
+  const token = await api.external(tokenAddress, tokenAbi)
+
+  return [token, tokenAddress]
+}
+
+async function getMembers(api, tmAddress) {
+  const [token, tokenAddress] = await getToken(api, tmAddress)
+  const members = [
+    ...new Set(
+      await token
+        .pastEvents({ fromBlock: '0x0' })
+        .pipe(
+          map(event =>
+            event
+              .filter(e => e.event.toLowerCase() === 'transfer')
+              .map(e => e.returnValues[1])
+          )
+        )
+        .toPromise()
+    ),
+  ]
+
+  const filteredMembers = (await Promise.all(
+    members.map(async m => [m, parseInt(await token.balanceOf(m).toPromise())])
+  )).filter(m => m[1] > 0)
+
+  return [filteredMembers, tokenAddress]
+}
+
 const CommitteeInfo = ({
-  committee: {
-    description,
-    address,
-    tokenParams,
-    tokenSymbol,
-    votingParams,
-    members,
-  },
+  committee: { description, address, tokenParams, tokenSymbol, votingParams },
 }) => {
+  const { api, appState } = useAragonApi()
+  const { isSyncing } = appState
   const theme = useTheme()
   const network = useNetwork()
   const tokenName = getTokenName(tokenSymbol)
   const tokenType = getTokenType(tokenParams)
   const votingType = getVotingType(votingParams)
+  const [members, setMembers] = useState([])
+  const [tokenAddress, setTokenAddress] = useState('')
 
-  const removeMemberHandler = member => {
-    console.log(`Removing member ${member}`)
+  useEffect(() => {
+    api &&
+      getMembers(api, address).then(res => {
+        setMembers(res[0])
+        setTokenAddress(res[1])
+      })
+  }, [isSyncing])
+
+  const removeMemberHandler = async (committee, member, stake) => {
+    console.log(
+      `Removing member  ${member} with stake ${stake} from ${committee}`
+    )
+    await api.removeMember(committee, member, stake).toPromise()
   }
-  console.log(members)
+
   return (
     <Split
       primary={
@@ -67,16 +113,19 @@ const CommitteeInfo = ({
               }
               fields={['account']}
               entries={members.map(member => {
-                const [account] = member
-                return { account }
+                const [account, stake] = member
+                return { account, stake }
               })}
               renderEntry={({ account }) => {
                 return [<IdentityBadge entity={account} />]
               }}
-              renderEntryActions={({ account }) => (
+              renderEntryActions={({ account, stake }) => (
                 <EntryActions
                   address={account}
-                  onDeleteMember={removeMemberHandler}
+                  stake={stake}
+                  onDeleteMember={(member, stake) => {
+                    removeMemberHandler(address, member, stake)
+                  }}
                 />
               )}
             />
@@ -97,7 +146,7 @@ const CommitteeInfo = ({
               <span>Token</span>
               <span>:</span>
               <TokenBadge
-                address="0xc41e4c10b37d3397a99d4a90e7d85508a69a5c4c"
+                address={tokenAddress}
                 name={tokenName}
                 symbol={tokenSymbol}
                 networkType={network && network.type}
@@ -147,9 +196,9 @@ const CommitteeInfo = ({
   )
 }
 
-const EntryActions = ({ address, onDeleteMember }) => {
+const EntryActions = ({ address, stake, onDeleteMember }) => {
   const theme = useTheme()
-  const removeMember = useCallback(() => onDeleteMember(address), [
+  const removeMember = useCallback(() => onDeleteMember(address, stake), [
     address,
     onDeleteMember,
   ])

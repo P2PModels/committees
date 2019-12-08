@@ -60,15 +60,8 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         _;
     }
 
-    modifier membersExists(address _committee, address[] _members, uint256[] _stakes) {
-        TokenManager tm = TokenManager(committees[_committee].tokenManagerAppAddress);
-
+    modifier areEqualMembersStakes(address[] _members, uint256[] _stakes) {
         require(_members.length == _stakes.length, ERROR_MEMBER_STAKES_NOT_EQUAL);
-
-        for (uint256 i = 0; i < _members.length; i++) {
-            if (tm.token().balanceOf(_members[i]) > 0)
-                revert(ERROR_MEMBER_EXISTS);
-        }
         _;
     }
 
@@ -125,13 +118,12 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     )
         external
         committeeExists(_committee)
-        membersExists(_committee, _members, _stakes)
+        areEqualMembersStakes(_members, _stakes)
         auth(EDIT_COMMITTEE_MEMBERS_ROLE)
     {
         address tmAddress = committees[_committee].tokenManagerAppAddress;
 
         _mintTokens(TokenManager(tmAddress), _members, _stakes);
-        emit AddMembers(_committee, _members, _stakes);
     }
 
     /**
@@ -141,7 +133,8 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
      */
     function removeMember(
         address _committee,
-        address _member
+        address _member,
+        uint256 _stake
     )
         external
         committeeExists(_committee)
@@ -150,9 +143,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     {
         address tmAddress = committees[_committee].tokenManagerAppAddress;
 
-        _burnTokens(TokenManager(tmAddress), _member, 1);
-
-        emit RemoveMember(_committee, _member);
+        _burnTokens(TokenManager(tmAddress), _member, _stake);
     }
 
     /**

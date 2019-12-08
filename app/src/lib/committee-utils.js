@@ -32,7 +32,7 @@ export const DEFAULT_VOTING_TYPES = [
 export const DEFAULT_MEMBER = ['', -1]
 
 export function getTokenType(tokenParams) {
-  const [unique, transferable ] = tokenParams
+  const [transferable, unique] = tokenParams
   const name =
     !transferable && !unique
       ? 'Reputation'
@@ -61,7 +61,7 @@ export function updateCommitteesMembers(
   committees,
   committeeAddress,
   memberAddress,
-  addMember
+  addMembers
 ) {
   const commIndex = committees.findIndex(committee => {
     return committee.address === committeeAddress
@@ -69,7 +69,7 @@ export function updateCommitteesMembers(
 
   let resMember
   const updatedCommittees = [...committees]
-  if (addMember) resMember = [...committees[commIndex].members, memberAddress]
+  if (addMembers) resMember = [...committees[commIndex].members, memberAddress]
   else
     resMember = committees[commIndex].members.filter(member => {
       return member !== memberAddress

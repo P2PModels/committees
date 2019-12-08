@@ -34,7 +34,7 @@ const tokenTypes = DEFAULT_TOKEN_TYPES.map(types => {
     <Text>
       {types.name + ' '}
       {types.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
-      {types.unique ? <Tag uppercase={false}>No cumulative</Tag> : null}
+      {types.unique ? <Tag uppercase={false}>Unique</Tag> : null}
     </Text>
   )
 })
