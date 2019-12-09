@@ -52,11 +52,9 @@ async function getTransactionsFromLogs(api, apps, logs) {
     ...new Set(logs.map(({ transactionHash }) => transactionHash)),
   ]
   // Get transaction objects and filter by transactions that belong to apps
-  const txs = (
-    await Promise.all(
-      txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
-    )
-  ).filter(({ to }) => apps.includes(toChecksumAddress(to)))
+  const txs = (await Promise.all(
+    txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
+  )).filter(({ to }) => apps.includes(toChecksumAddress(to)))
   return txs
 }
 

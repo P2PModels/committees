@@ -75,6 +75,11 @@ contract CommitteeHelper is APMNamehash, IsContract {
         _acl.createPermission(_grantee, _vault, _vault.TRANSFER_ROLE(), _manager);
     }
 
+    function _revokeAndBurnVaultPermissions(ACL _acl, Vault _vault, address _entity) internal {
+        _acl.revokePermission(_entity, _vault, _vault.TRANSFER_ROLE());
+        _acl.burnPermissionManager(_vault, _vault.TRANSFER_ROLE());
+    }
+
     /* FINANCE */
 
     function _installFinanceApp(Kernel _dao, Vault _vault, uint64 _periodDuration) internal returns (Finance) {
@@ -85,6 +90,18 @@ contract CommitteeHelper is APMNamehash, IsContract {
     function _createFinancePermissions(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _manager);
         _acl.createPermission(_grantee, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _manager);
+    }
+
+    function _revokeFinancePermissions(ACL _acl, Finance _finance, address _entity) internal {
+        _acl.revokePermission(_entity, _finance, _finance.EXECUTE_PAYMENTS_ROLE());
+        _acl.revokePermission(_entity, _finance, _finance.MANAGE_PAYMENTS_ROLE());
+        _acl.revokePermission(_entity, _finance, _finance.CREATE_PAYMENTS_ROLE());
+    }
+
+    function _burnFinancePermissionManager(ACL _acl, Finance _finance) internal {
+        _acl.burnPermissionManager(_finance, _finance.EXECUTE_PAYMENTS_ROLE());
+        _acl.burnPermissionManager(_finance, _finance.MANAGE_PAYMENTS_ROLE());
+        _acl.burnPermissionManager(_finance, _finance.CREATE_PAYMENTS_ROLE());
     }
 
     function _createFinanceCreatePaymentsPermission(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
@@ -119,10 +136,21 @@ contract CommitteeHelper is APMNamehash, IsContract {
         _acl.grantPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE());
     }
 
+    function _revokeTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _entity) {
+        _acl.revokePermission(_entity, _tokenManager, _tokenManager.MINT_ROLE());
+        _acl.revokePermission(_entity, _tokenManager, _tokenManager.BURN_ROLE());
+    }
+
+    function _burnTokenManagerPermissionManager(ACL _acl, TokenManager _tokenManager) internal {
+        _acl.burnPermissionManager(_tokenManager, _tokenManager.MINT_ROLE());
+        _acl.burnPermissionManager(_tokenManager, _tokenManager.BURN_ROLE());
+    }
+
     function _changeTokenManagerPermissionManager(ACL _acl, TokenManager _tokenManager, address _manager) internal {
         _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.MINT_ROLE());
         _acl.setPermissionManager(_manager, _tokenManager, _tokenManager.BURN_ROLE());
     }
+
 
     function _mintTokens(TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
         for (uint256 i = 0; i < _holders.length; i++) {

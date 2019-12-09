@@ -175,12 +175,43 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
     /**
      * @notice Delete committee.
-     * @param _committee Committee's address
-     * @param _committee Committee's members addreses.
+     * @param _committee Committee address
+     * @param _members Members addreses.
+     * @param _stakes Member's stakes.
      */
-    function removeCommittee(address _committee, address[] _members) external auth(DELETE_COMMITTEE_ROLE) {
+    function removeCommittee(
+        address _committee,
+        address[] _members,
+        uint256[] _stakes
+    )
+    external
+    committeeExists(_committee)
+    areEqualMembersStakes(_members, _stakes)
+    auth(DELETE_COMMITTEE_ROLE)
+    {
+        Kernel _dao = Kernel(kernel());
+        ACL acl = ACL(_dao.acl());
+        Committee c = committees[_committee];
+        TokenManager tm = TokenManager(_committee);
+
         //Delete all members
-        _burnTokens(TokenManager(_committee), _members, 1);
+        _burnTokens(TokenManager(_committee), _members, _stakes);
+
+        //Revoke token manager permissions
+        _revokeTokenManagerPermissions(acl, tm, manager);
+        _revokeTokenManagerPermissions(acl, tm, this);
+
+        //Burn permission manager so no one can't set it never again.
+        _burnTokenManagerPermissionManager(acl, tm);
+
+
+        if (c.finance != address(0)) {
+            Finance finance = Finance(c.finance);
+            _revokeAndBurnVaultPermissions(acl, finance.vault(), finance);
+            _revokeFinancePermissions(acl, finance, c.voting);
+            _burnFinancePermissionManager(acl, finance);
+        }
+
         delete committees[_committee];
 
         emit RemoveCommittee(_committee);
@@ -252,7 +283,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         Voting voting = _installVotingApp(_dao, token, _votingParams[0] * PCT, _votingParams[1] * PCT, _votingParams[2] * 1 days);
         //Only token holders can open a vote.
         _createVotingPermissions(acl, voting, manager, manager);
-        _changeTokenManagerPermissionManager(acl, tokenManager, manager);
+        // _changeTokenManagerPermissionManager(acl, tokenManager, manager);
 
         apps[0] = address(tokenManager);
         apps[1] = address(voting);
@@ -263,9 +294,9 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         ACL acl = ACL(_dao.acl());
         Vault vault = _installNonDefaultVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, vault, DEFAULT_FINANCE_PERIOD);
-        _createVaultPermissions(acl, vault, finance, manager);
-        _createFinancePermissions(acl, finance, _grantee, manager);
-        _createFinanceCreatePaymentsPermission(acl, finance, _grantee, manager);
+        _createVaultPermissions(acl, vault, finance, this);
+        _createFinancePermissions(acl, finance, _grantee, this);
+        _createFinanceCreatePaymentsPermission(acl, finance, _grantee, this);
         committees[_committee].finance = finance;
     }
 }

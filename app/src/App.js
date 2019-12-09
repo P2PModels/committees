@@ -144,6 +144,7 @@ function App() {
                 committee={selectedCommittee}
                 onBack={backHandler}
                 onChangeTab={changeTabHandler}
+                onDeleteCommittee={() => setSelectedCommittee(null)}
               />
             ) : (
               <Committees

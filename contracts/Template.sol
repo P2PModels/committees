@@ -95,29 +95,32 @@ contract Template is TemplateBase {
         tokenManager.initialize(token, true, 0);
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
 
+        //Set token manager permissions
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
         acl.createPermission(voting, tokenManager, tokenManager.BURN_ROLE(), this);
+        acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
+        acl.grantPermission(voting, tokenManager, tokenManager.BURN_ROLE());
 
         tokenManager.mint(root, 1); // Give one token to root
+        //Set voting permissions
+        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), voting);
+        acl.grantPermission(voting, dao, dao.APP_MANAGER_ROLE());
 
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
-
-        //Set committee manager permissions.
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
 
+        //Set voting permissions over finance
         acl.createPermission(voting, finance, finance.EXECUTE_PAYMENTS_ROLE(), voting);
         acl.createPermission(voting, finance, finance.MANAGE_PAYMENTS_ROLE(), voting);
         acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
 
         acl.createPermission(this, app, app.CREATE_COMMITTEE_ROLE(), this);
 
+        //Set voting permissions over committees
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.DELETE_COMMITTEE_ROLE(), voting);
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_MEMBERS_ROLE(), voting);
         acl.createPermission(voting, app, app.EDIT_COMMITTEE_PERMISSIONS_ROLE(), voting);
 
-        acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
-        acl.grantPermission(voting, tokenManager, tokenManager.BURN_ROLE());
         acl.grantPermission(app, dao, dao.APP_MANAGER_ROLE());
         acl.grantPermission(app, acl, acl.CREATE_PERMISSIONS_ROLE());
 
@@ -126,17 +129,20 @@ contract Template is TemplateBase {
         createFinanceCommittee(app);
 
         // Clean up permissions
-        acl.grantPermission(root, dao, dao.APP_MANAGER_ROLE());
-        acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
-        acl.setPermissionManager(root, dao, dao.APP_MANAGER_ROLE());
+        // acl.grantPermission(root, dao, dao.APP_MANAGER_ROLE());
+        acl.grantPermission(voting, dao, dao.APP_MANAGER_ROLE());
 
-        acl.grantPermission(root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
+        acl.setPermissionManager(voting, dao, dao.APP_MANAGER_ROLE());
+
+        acl.grantPermission(voting, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        acl.setPermissionManager(voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         acl.revokePermission(this, tokenManager, tokenManager.MINT_ROLE());
         acl.setPermissionManager(voting, tokenManager, tokenManager.MINT_ROLE());
 
+        //Clean up create committee permission
         acl.grantPermission(voting, app, app.CREATE_COMMITTEE_ROLE());
         acl.revokePermission(this, app, app.CREATE_COMMITTEE_ROLE());
         acl.setPermissionManager(voting, app, app.CREATE_COMMITTEE_ROLE());

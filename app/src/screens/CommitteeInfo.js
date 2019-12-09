@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import { useAragonApi, useNetwork } from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
@@ -21,63 +21,23 @@ import {
   GU,
 } from '@aragon/ui'
 
-import { map } from 'rxjs/operators'
-
-import tmAbi from '../abi/TokenManager.json'
-import tokenAbi from '../abi/minimeToken.json'
-
-async function getToken(api, tmAddress) {
-  const tm = api.external(tmAddress, tmAbi)
-  const tokenAddress = await tm.token().toPromise()
-  const token = await api.external(tokenAddress, tokenAbi)
-
-  return [token, tokenAddress]
-}
-
-async function getMembers(api, tmAddress) {
-  const [token, tokenAddress] = await getToken(api, tmAddress)
-  const members = [
-    ...new Set(
-      await token
-        .pastEvents({ fromBlock: '0x0' })
-        .pipe(
-          map(event =>
-            event
-              .filter(e => e.event.toLowerCase() === 'transfer')
-              .map(e => e.returnValues[1])
-          )
-        )
-        .toPromise()
-    ),
-  ]
-
-  const filteredMembers = (await Promise.all(
-    members.map(async m => [m, parseInt(await token.balanceOf(m).toPromise())])
-  )).filter(m => m[1] > 0)
-
-  return [filteredMembers, tokenAddress]
-}
-
 const CommitteeInfo = ({
-  committee: { description, address, tokenParams, tokenSymbol, votingParams },
+  committee: {
+    description,
+    address,
+    tokenParams,
+    tokenSymbol,
+    tokenAddress,
+    votingParams,
+    members,
+  },
 }) => {
-  const { api, appState } = useAragonApi()
-  const { isSyncing } = appState
+  const { api } = useAragonApi()
   const theme = useTheme()
   const network = useNetwork()
   const tokenName = getTokenName(tokenSymbol)
   const tokenType = getTokenType(tokenParams)
   const votingType = getVotingType(votingParams)
-  const [members, setMembers] = useState([])
-  const [tokenAddress, setTokenAddress] = useState('')
-
-  useEffect(() => {
-    api &&
-      getMembers(api, address).then(res => {
-        setMembers(res[0])
-        setTokenAddress(res[1])
-      })
-  }, [isSyncing])
 
   const removeMemberHandler = async (committee, member, stake) => {
     console.log(
