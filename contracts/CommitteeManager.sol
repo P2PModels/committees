@@ -22,9 +22,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     event RemoveCommittee(address indexed committeeAddress);
     event AddMembers(address indexed committeeAddress, address[] members, uint256[] stakes);
     event RemoveMember(address indexed committeeAddress, address member);
-    event AddPermission(address indexed committeeAddress, address app, bytes32 appName, bytes32 role);
-    event RemovePermission(address indexed committeeAddress, address app, bytes32 appName, bytes32 role);
-    event ModifyCommittee(address indexed committeeAddress, string description);
+    event ModifyCommitteeInfo(address indexed committeeAddress, bytes32 name, string description);
 
     /// Types
     struct Committee {
@@ -138,10 +136,25 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Add new members to the committee `_committee`.
-     * @param _committee Committee's address.
-     * @param _members The new members addresses.
-     * @param _stakes  The new members token stakes.
+     * @notice Modify committee name and description
+     * @param _committee Committee's token manager address
+     * @param _name New committee name
+     * @param _description New committee description
+     */
+    function modifyCommitteeInfo(address _committee, bytes32 _name, string _description)
+        external
+        committeeExists(_committee)
+        authP(MODIFY_INFO_ROLE, _arr(_committee))
+    {
+        committees[_committee].name = _name;
+        emit ModifyCommitteeInfo(_committee, _name, _description);
+    }
+
+    /**
+     * @notice Add new members to the committee `_committee`
+     * @param _committee Committee's token manager address
+     * @param _members The new members addresses
+     * @param _stakes  The new members token stakes
      */
     function addMembers(
         address _committee,
@@ -151,46 +164,42 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         external
         committeeExists(_committee)
         areEqualMembersStakes(_members, _stakes)
-        auth(MANAGE_MEMBERS_ROLE)
+        authP(MANAGE_MEMBERS_ROLE, _arr(_committee))
     {
-        address tmAddress = _committee;
-        _mintTokens(TokenManager(tmAddress), _members, _stakes);
+        TokenManager tm = TokenManager(_committee);
+        _mintTokens(tm, _members, _stakes);
     }
 
     /**
      * @notice Delete member `_member` from committee `_committee`.
-     * @param _committee Committee's address
-     * @param _member Committee's member address.
+     * @param _committee Committee's token manager address
+     * @param _member Committee's member address
      */
     function removeMember(
         address _committee,
-        address _member,
-        uint256 _stake
+        address _member
     )
         external
         committeeExists(_committee)
         memberExists(_committee, _member)
-        auth(EDIT_COMMITTEE_MEMBERS_ROLE)
+        authP(MANAGE_MEMBERS_ROLE, _arr(_committee))
     {
-        address tmAddress = _committee;
-        _burnTokens(TokenManager(tmAddress), _member, _stake);
+        TokenManager tm = TokenManager(_committee);
+        _burnTokens(tm, _member, tm.token().balanceOf(_member));
     }
 
     /**
      * @notice Delete committee.
      * @param _committee Committee address
-     * @param _members Members addreses.
-     * @param _stakes Member's stakes.
+     * @param _members Members addreses
      */
     function removeCommittee(
         address _committee,
-        address[] _members,
-        uint256[] _stakes
+        address[] _members
     )
-    external
-    committeeExists(_committee)
-    areEqualMembersStakes(_members, _stakes)
-    auth(DELETE_COMMITTEE_ROLE)
+        external
+        committeeExists(_committee)
+        authP(DELETE_COMMITTEE_ROLE, _arr(_committee))
     {
         Kernel _dao = Kernel(kernel());
         ACL acl = ACL(_dao.acl());
@@ -198,7 +207,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         TokenManager tm = TokenManager(_committee);
 
         //Delete all members
-        _burnTokens(TokenManager(_committee), _members, _stakes);
+        _burnTokens(tm, _members);
 
         //Revoke token manager permissions
         _revokeTokenManagerPermissions(acl, tm, manager);
@@ -238,16 +247,12 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, _tokenParams);
         _createTokenManagerPermissions(acl, tokenManager, this, this);
         _grantTokenManagerPermissions(acl, tokenManager, manager);
-
-        if (_tokenParams[1])
-            _mintTokens(tokenManager, _initialMembers, 1);
-        else
-            _mintTokens(tokenManager, _initialMembers, _stakes);
+        _mintTokens(tokenManager, _initialMembers, _stakes);
 
         Voting voting = _installVotingApp(_dao, token, _votingParams[0] * PCT, _votingParams[1] * PCT, _votingParams[2] * 1 days);
         //Only token holders can open a vote.
         _createVotingPermissions(acl, voting, manager, manager);
-        // _changeTokenManagerPermissionManager(acl, tokenManager, manager);
+        _changeTokenManagerPermissionManager(acl, tokenManager, manager);
 
         _revokeTokenManagerPermissions(acl, tokenManager, this);
         apps[0] = address(tokenManager);
@@ -259,9 +264,16 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         ACL acl = ACL(_dao.acl());
         Vault vault = _installNonDefaultVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, vault, DEFAULT_FINANCE_PERIOD);
-        _createVaultPermissions(acl, vault, finance, this);
-        _createFinancePermissions(acl, finance, _grantee, this);
-        _createFinanceCreatePaymentsPermission(acl, finance, _grantee, this);
+        _createVaultPermissions(acl, vault, finance, manager);
+        _createFinancePermissions(acl, finance, _grantee, manager);
+        _createFinanceCreatePaymentsPermission(acl, finance, _grantee, manager);
         committees[_committee].finance = finance;
+    }
+
+    // Syntax sugar
+
+    function _arr(address _a) internal pure returns (uint256[] r) {
+        r = new uint256[](1);
+        r[0] = uint256(_a);
     }
 }

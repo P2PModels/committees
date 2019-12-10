@@ -9,18 +9,21 @@
       "name": "Modify committee info",
       "id": "MODIFY_INFO_ROLE",
       "params": [
+        "Committee"
       ]
     },
     {
       "name": "Delete a committee",
       "id": "DELETE_COMMITTEE_ROLE",
       "params": [
+        "Committee"
       ]
     },
     {
       "name": "Add or delete a member to/from a committee",
       "id": "MANAGE_MEMBERS_ROLE",
       "params": [
+        "Committee"
       ]
     }
   ],
