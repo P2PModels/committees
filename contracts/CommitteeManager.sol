@@ -44,10 +44,9 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
     /// ACL
     bytes32 constant public CREATE_COMMITTEE_ROLE = keccak256("CREATE_COMMITTEE_ROLE");
-    bytes32 constant public EDIT_COMMITTEE_ROLE = keccak256("EDIT_COMMITTEE_ROLE");
+    bytes32 constant public MODIFY_INFO_ROLE = keccak256("MODIFY_INFO_ROLE");
     bytes32 constant public DELETE_COMMITTEE_ROLE = keccak256("DELETE_COMMITTEE_ROLE");
-    bytes32 constant public EDIT_COMMITTEE_MEMBERS_ROLE = keccak256("EDIT_COMMITTEE_MEMBERS_ROLE");
-    bytes32 constant public EDIT_COMMITTEE_PERMISSIONS_ROLE = keccak256("EDIT_COMMITTEE_PERMISSIONS_ROLE");
+    bytes32 constant public MANAGE_MEMBERS_ROLE = keccak256("MANAGE_MEMBERS_ROLE");
 
     /// Errors
     string private constant ERROR_COMMITTEE_MISSING = "COMMITTEE_NOT_ADDED";
@@ -152,10 +151,29 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         external
         committeeExists(_committee)
         areEqualMembersStakes(_members, _stakes)
-        auth(EDIT_COMMITTEE_MEMBERS_ROLE)
+        auth(MANAGE_MEMBERS_ROLE)
     {
         address tmAddress = _committee;
         _mintTokens(TokenManager(tmAddress), _members, _stakes);
+    }
+
+    /**
+     * @notice Delete member `_member` from committee `_committee`.
+     * @param _committee Committee's address
+     * @param _member Committee's member address.
+     */
+    function removeMember(
+        address _committee,
+        address _member,
+        uint256 _stake
+    )
+        external
+        committeeExists(_committee)
+        memberExists(_committee, _member)
+        auth(EDIT_COMMITTEE_MEMBERS_ROLE)
+    {
+        address tmAddress = _committee;
+        _burnTokens(TokenManager(tmAddress), _member, _stake);
     }
 
     /**
@@ -203,45 +221,6 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Add permission to committee.
-     * @param _committee Committee's address
-     * @param _app Entity address
-     * @param _appName Entity name
-     * @param _role Permission
-     */
-    function addPermission(
-        address _committee,
-        address _app,
-        bytes32 _appName,
-        bytes32 _role
-    )
-        external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE)
-    {
-
-        //...
-
-    }
-
-    /**
-     * @notice Remove permission from committee
-     * @param _committee Committee's address
-     * @param _app Entity address
-     * @param _appName Entity name
-     * @param _role Permission
-     */
-    function removePermission(
-        address _committee,
-        address _app,
-        bytes32 _appName,
-        bytes32 _role
-    )
-        external auth(EDIT_COMMITTEE_PERMISSIONS_ROLE)
-    {
-        
-        //...
-    }
-
-    /**
      * @dev It creates a new TokenManager and Voting app for the new committee.
      */
     function _installCommitteeApps(
@@ -285,24 +264,4 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         _createFinanceCreatePaymentsPermission(acl, finance, _grantee, this);
         committees[_committee].finance = finance;
     }
-
-
-    // /**
-    //  * @notice Delete member `_member` from committee `_committee`.
-    //  * @param _committee Committee's address
-    //  * @param _member Committee's member address.
-    //  */
-    // function removeMember(
-    //     address _committee,
-    //     address _member,
-    //     uint256 _stake
-    // )
-    //     external
-    //     committeeExists(_committee)
-    //     memberExists(_committee, _member)
-    //     auth(EDIT_COMMITTEE_MEMBERS_ROLE)
-    // {
-    //     address tmAddress = _committee;
-    //     _burnTokens(TokenManager(tmAddress), _member, _stake);
-    // }
 }

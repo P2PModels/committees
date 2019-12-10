@@ -116,10 +116,9 @@ contract Template is TemplateBase {
         acl.createPermission(this, app, app.CREATE_COMMITTEE_ROLE(), this);
 
         //Set voting permissions over committees
-        acl.createPermission(voting, app, app.EDIT_COMMITTEE_ROLE(), voting);
+        acl.createPermission(voting, app, app.MODIFY_INFO_ROLE(), voting);
         acl.createPermission(voting, app, app.DELETE_COMMITTEE_ROLE(), voting);
-        acl.createPermission(voting, app, app.EDIT_COMMITTEE_MEMBERS_ROLE(), voting);
-        acl.createPermission(voting, app, app.EDIT_COMMITTEE_PERMISSIONS_ROLE(), voting);
+        acl.createPermission(voting, app, app.MANAGE_MEMBERS_ROLE(), voting);
 
         acl.grantPermission(app, dao, dao.APP_MANAGER_ROLE());
         acl.grantPermission(app, acl, acl.CREATE_PERMISSIONS_ROLE());

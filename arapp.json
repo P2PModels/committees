@@ -6,38 +6,38 @@
       "params": []
     },
     {
-      "name": "Edit committee basic info",
-      "id": "EDIT_COMMITTEE_ROLE",
-      "params": []
+      "name": "Modify committee info",
+      "id": "MODIFY_INFO_ROLE",
+      "params": [
+      ]
     },
     {
       "name": "Delete a committee",
       "id": "DELETE_COMMITTEE_ROLE",
-      "params": []
-    }, {
+      "params": [
+      ]
+    },
+    {
       "name": "Add or delete a member to/from a committee",
-      "id": "EDIT_COMMITTEE_MEMBERS_ROLE",
-      "params": []
-    }, {
-      "name": "Add or delete a permission to/from a committee ",
-      "id": "EDIT_COMMITTEE_PERMISSIONS_ROLE",
-      "params": []
+      "id": "MANAGE_MEMBERS_ROLE",
+      "params": [
+      ]
     }
   ],
   "environments": {
     "default": {
       "network": "development",
-      "appName": "committee-manager-app.open.aragonpm.eth"
+      "appName": "committees.open.aragonpm.eth"
     },
     "rinkeby": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "committee-manager-app.open.aragonpm.eth",
+      "appName": "committees.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
     "mainnet": {
       "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
-      "appName": "committee-manager-app.open.aragonpm.eth",
+      "appName": "committees.open.aragonpm.eth",
       "wsRPC": "wss://mainnet.eth.aragon.network/ws",
       "network": "mainnet"
     }

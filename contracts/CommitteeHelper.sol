@@ -172,6 +172,13 @@ contract CommitteeHelper is APMNamehash, IsContract {
         _tokenManager.burn(_holder, _stake);
     }
 
+    function _burnTokens(TokenManager _tokenManager, address[] _holders) internal {
+        MiniMeToken token = _tokenManager.token();
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.burn(_holders[i], token.balanceOf(_holders[i]));
+        }
+    }
+
     function _burnTokens(TokenManager _tokenManager, address[] _holders, uint256 _stake) internal {
         for (uint256 i = 0; i < _holders.length; i++) {
             _tokenManager.burn(_holders[i], _stake);
