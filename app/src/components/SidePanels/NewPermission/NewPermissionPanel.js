@@ -6,6 +6,8 @@ import { DropDown } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import LocalAppBadge from '../../LocalIdentityBadge/LocalAppBadge'
+import { usePanelManagement } from '../../SidePanels'
+
 import { map, first } from 'rxjs/operators'
 
 import aclAbi from '../../../abi/ACL.json'
@@ -24,64 +26,83 @@ async function getAppRoles(api, selectedAppAddress) {
             return proxyAddress === selectedAppAddress
           })
           .map(a => {
+            console.log('here')
             console.log(a)
             return a.roles
           })
       )
     )
     .toPromise()
-  console.log(appRoles)
-  const formattedRoles = appRoles[0].map(({ name }) => {
-    return name
-  })
-
-  return formattedRoles
-}
-
-const NewPermissionPanel = ({ entity }) => {
-  const { api, appState, installedApps } = useAragonApi()
-  const { isSyncing } = appState
-
-  const [selectedApp, setSelectedApp] = useState(0)
-  const [actions, setActions] = useState([1])
-  const [action, setAction] = useState(0)
-  const [error, setError] = useState({})
-
-  const sortedApps = installedApps.sort((a, b) => {
+  return appRoles[0].sort((a, b) => {
     if (a.name < b.name) return -1
     if (a.name > b.name) return 1
     return 0
   })
-  const sortedFormattedApps = [
-    INITIAL_APP_DROPDOWN_VALUE,
-    ...sortedApps.map(app => {
-      return <LocalAppBadge installedApp={app} />
+}
+
+const NewPermissionPanel = ({ committeeApp }) => {
+  const { api, appState, installedApps } = useAragonApi()
+  const { isSyncing } = appState
+
+  const [selectedApp, setSelectedApp] = useState(0)
+  const [roles, setRoles] = useState([])
+  const [selectedRole, setSelectedRole] = useState(0)
+  const [error, setError] = useState({})
+
+  const { closePanel } = usePanelManagement()
+
+  const sortedApps = [
+    {},
+    ...installedApps.sort((a, b) => {
+      if (a.name < b.name) return -1
+      if (a.name > b.name) return 1
+      return 0
     }),
   ]
+  const sortedFormattedApps = sortedApps.map((app, index) => {
+    if (index > 0) return <LocalAppBadge installedApp={app} />
+    else return INITIAL_APP_DROPDOWN_VALUE
+  })
+
+  const sortedFormattedRoles = roles.map(({ name }, index) => {
+    if (index > 0) return name
+    else return INITIAL_ROLE_DROPDOWN_VALUE
+  })
 
   useEffect(() => {
     api && console.log('get data')
   }, [isSyncing])
 
-  const createPermission = (committeeApp, app, action) => {
-    console.lo(
+  const createPermission = async (committeeApp, app, action) => {
+    const acl = await api.call('getAcl').toPromise()
+    const aclHandler = api.external(acl, aclAbi)
+    console.log(
       `Committee app ${committeeApp} now has role ${action} on app ${app}`
     )
+    aclHandler.grantPermission(committeeApp, app, action).subscribe(closePanel)
   }
 
   const selectedAppHandler = async index => {
     const selectedAppAddress = sortedApps[index].appAddress
+    console.log(sortedApps.index)
     const roles = await getAppRoles(api, selectedAppAddress)
-    setActions(roles)
+    setRoles([{}, ...roles])
     setSelectedApp(index)
   }
   const submitHandler = () => {
     const error = {}
-    const errorMsg = ''
+
+    if (!selectedApp) error.app = 'Select an app '
+
+    if (selectedApp && !selectedRole) error.role = 'Select an action'
 
     if (Object.keys(error).length) setError({ ...error })
     else {
-      createPermission()
+      createPermission(
+        committeeApp,
+        sortedApps[selectedApp].appAddress,
+        roles[selectedRole].bytes
+      )
     }
   }
 
@@ -104,13 +125,13 @@ const NewPermissionPanel = ({ entity }) => {
         <FormField
           required
           label="Action"
-          err={error && error.action}
+          err={error && error.role}
           input={
             <DropDown
               wide
-              items={actions}
-              selected={action}
-              onChange={setAction}
+              items={sortedFormattedRoles}
+              selected={selectedRole}
+              onChange={setSelectedRole}
             />
           }
         />

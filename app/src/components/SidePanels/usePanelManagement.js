@@ -20,11 +20,11 @@ const usePanelManagement = () => {
         isUnique,
       })
     },
-    setUpNewPermission: entity => {
+    setUpNewPermission: committeeApp => {
       setActivePanel(PANELS.NewPermissionPanel)
       setPanelProps({
         title: 'New Permission',
-        entity,
+        committeeApp,
       })
     },
   }

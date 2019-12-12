@@ -18,7 +18,7 @@ function LocalAppBadge({ appAddress, installedApp }) {
       <LocalLabelAppBadge
         appAddress={app.appAddress}
         label={app.name}
-        iconSrc={app.icon()}
+        iconSrc={app.icon() || ''}
       />
       {app.identifier && (
         <Tag
