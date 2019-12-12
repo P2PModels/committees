@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAragonApi } from '@aragon/api-react'
 import { DataView, GU, Tag, Text, useTheme, textStyle } from '@aragon/ui'
 import LocalIdentityBadge from '../components/LocalIdentityBadge/LocalIdentityBadge'
-import LocalLabelAppBadge from '../components/LocalIdentityBadge/LocalLabelAppBadge'
+import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 import AnnotatedDescription from '../components/AnnotatedDescription'
 
 // http://localhost:39967/#/0xc0Bb2ce43F3933beadF371b6d67795BecC1E5396/0xa15cc45a8751bcc2794fdd955ec49efc9615e4cc/
@@ -181,7 +181,7 @@ function ActivityLog({ heading, activities }) {
             annotatedDescription={annotatedDescription}
           />
         </Text>,
-        <LocalAppBadge app={app} />,
+        <LocalAppBadge app={app.appAddress} />,
         <Text
           title={formatDate(timestamp)}
           css={`
@@ -200,29 +200,29 @@ function ActivityLog({ heading, activities }) {
   )
 }
 
-function LocalAppBadge({ app: appAddress }) {
-  const { installedApps } = useAragonApi()
-  const app = installedApps.find(
-    installed => appAddress === toChecksumAddress(installed.appAddress)
-  )
-  return (
-    <>
-      <LocalLabelAppBadge
-        appAddress={appAddress}
-        label={app.name}
-        iconSrc={app.icon()}
-      />
-      <Tag
-        mode="identifier"
-        css={`
-          margin-left: ${1 * GU}px;
-        `}
-      >
-        {app.identifier}
-      </Tag>
-    </>
-  )
-}
+// function LocalAppBadge({ app: appAddress }) {
+//   const { installedApps } = useAragonApi()
+//   const app = installedApps.find(
+//     installed => appAddress === toChecksumAddress(installed.appAddress)
+//   )
+//   return (
+//     <>
+//       <LocalLabelAppBadge
+//         appAddress={appAddress}
+//         label={app.name}
+//         iconSrc={app.icon()}
+//       />
+//       <Tag
+//         mode="identifier"
+//         css={`
+//           margin-left: ${1 * GU}px;
+//         `}
+//       >
+//         {app.identifier}
+//       </Tag>
+//     </>
+//   )
+// }
 
 function CommitteeActivity({ committee }) {
   const { api, appState } = useAragonApi()

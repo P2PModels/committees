@@ -24,8 +24,7 @@ const NewMembersPanel = ({ committeeAddress, isUnique }) => {
   const inputRef = useSidePanelFocusOnReady()
 
   const createMembers = async (committeeAddress, addresses, stakes) => {
-    closePanel()   
-    console.log(`Creating member ${addresses} with stakes ${stakes} on ${committeeAddress}`) 
+    closePanel()
     await api.addMembers(committeeAddress, addresses, stakes).toPromise()
   }
   

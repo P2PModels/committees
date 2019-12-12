@@ -17,7 +17,14 @@ const usePanelManagement = () => {
       setPanelProps({
         title: 'New Members',
         committeeAddress,
-        isUnique
+        isUnique,
+      })
+    },
+    setUpNewPermission: entity => {
+      setActivePanel(PANELS.NewPermissionPanel)
+      setPanelProps({
+        title: 'New Permission',
+        entity,
       })
     },
   }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
 import { utf8ToHex } from 'web3-utils'
 
@@ -8,7 +9,7 @@ import {
   Tag,
   TextInput,
   DropDown,
-  Checkbox,
+  Switch,
   GU,
   useSidePanelFocusOnReady,
   useTheme,
@@ -178,7 +179,7 @@ const NewCommitteePanel = React.memo(() => {
         }
       />
       <FormField
-        label="Finance"
+        label="Apps"
         input={
           <label
             css={`
@@ -186,17 +187,21 @@ const NewCommitteePanel = React.memo(() => {
               align-items: center;
               margin-top: ${GU}px;
               color: ${theme.surfaceContent};
+              width: 100%;
             `}
           >
-            <Checkbox checked={finance} onChange={enableFinance} />
-            <span
-              css={`
-                margin-left: ${0.5 * GU}px;
-                ${textStyle('label3')}
-              `}
-            >
-              Enable finance
-            </span>
+            <AppField>
+              <span
+                css={`
+                  margin-left: ${0.5 * GU}px;
+                  ${textStyle('body3')}
+                  color: ${theme.content}
+                `}
+              >
+                Finance &nbsp;
+              </span>
+              <Switch checked={finance} onChange={enableFinance} />
+            </AppField>
           </label>
         }
       />
@@ -216,4 +221,9 @@ const NewCommitteePanel = React.memo(() => {
   )
 })
 
+const AppField = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`
 export default NewCommitteePanel

@@ -6,6 +6,7 @@ import { SidePanel } from '@aragon/ui'
 const dynamicImport = Object.freeze({
   NewCommitteePanel: () => import('./NewCommittee/NewCommitteePanel'),
   NewMembersPanel: () => import('./NewMembers/NewMembersPanel'),
+  NewPermissionPanel: () => import('./NewPermission/NewPermissionPanel'),
 })
 
 export const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {

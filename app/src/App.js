@@ -42,7 +42,11 @@ function App() {
   }
 
   const ScreenAction = () => {
-    const { setupNewCommittee, setupNewMembers } = usePanelManagement()
+    const {
+      setupNewCommittee,
+      setupNewMembers,
+      setUpNewPermission,
+    } = usePanelManagement()
 
     switch (screenName) {
       case 'committees':
@@ -71,7 +75,7 @@ function App() {
         return (
           <Button
             mode="strong"
-            onClick={() => console.log('Setting up permission panel...')}
+            onClick={() => setUpNewPermission}
             label="New Permission"
           />
         )
@@ -100,13 +104,9 @@ function App() {
         <BaseStyles />
         {committees && committees.length === 0 && (
           <NoCommitteesLayout>
-            <NoCommittees
-              onNewCommittee={() => {
-                const { setupNewCommittee } = usePanelManagement()
-                setPanel(setupNewCommittee())
-              }}
-              isSyncing={false}
-            />
+            <NoCommittees isSyncing={false}>
+              <ScreenAction />
+            </NoCommittees>
           </NoCommitteesLayout>
         )}
         {committees && committees.length > 0 && (

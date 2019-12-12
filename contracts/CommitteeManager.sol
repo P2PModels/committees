@@ -83,6 +83,10 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         manager = _manager;
     }
 
+    function getAcl() external view returns(address) {
+        return Kernel(kernel()).acl();
+    }
+
     /**
      * @notice Create a new committee.
      * @param _name The name of the committee.
@@ -285,6 +289,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         _createVotingPermissions(acl, voting, manager, manager);
         // _changeTokenManagerPermissionManager(acl, tokenManager, manager);
 
+        _revokeTokenManagerPermissions(acl, tokenManager, this);
         apps[0] = address(tokenManager);
         apps[1] = address(voting);
     }

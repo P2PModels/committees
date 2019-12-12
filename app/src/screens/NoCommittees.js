@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Button, EmptyStateCard, GU, LoadingRing } from '@aragon/ui'
 
-const NoCommittees = React.memo(({ onNewCommittee, isSyncing }) => {
+const NoCommittees = React.memo(({ onNewCommittee, isSyncing , children}) => {
   return (
     <EmptyStateCard
       text={
@@ -24,12 +24,7 @@ const NoCommittees = React.memo(({ onNewCommittee, isSyncing }) => {
         )
       }
       action={
-        <Button
-          label="Create new committee"
-          wide
-          mode="strong"
-          onClick={onNewCommittee}
-        />
+        children
       }
     />
   )

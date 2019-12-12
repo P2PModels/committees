@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useAragonApi, useNetwork } from '@aragon/api-react'
 
-
 import PropTypes from 'prop-types'
 import {
   BackButton,
@@ -15,6 +14,7 @@ import {
 } from '@aragon/ui'
 
 import CommitteeInfo from './CommitteeInfo'
+import CommitteePermissions from './CommitteePermissions'
 import CommitteeActivity from './CommitteeActivity'
 
 import { map } from 'rxjs/operators'
@@ -54,7 +54,7 @@ async function getMembers(api, tmAddress) {
         .toPromise()
     ),
   ]
-  
+
   const filteredMembers = (await Promise.all(
     members.map(async m => [m, parseInt(await token.balanceOf(m).toPromise())])
   )).filter(m => m[1] > 0)
@@ -63,7 +63,7 @@ async function getMembers(api, tmAddress) {
 }
 
 const CommitteeDetails = React.memo(
-  ({ committee, onBack, onChangeTab, onDeleteCommittee}) => {
+  ({ committee, onBack, onChangeTab, onDeleteCommittee }) => {
     console.log('CommitteeDetails rerendering')
 
     const { api, appState } = useAragonApi()
@@ -91,16 +91,29 @@ const CommitteeDetails = React.memo(
     )
 
     const deleteCommitteeHandler = (committeeAddress, addresses, stakes) => {
-      console.log(`Deleting committee with address ${committeeAddress} and members: ${addresses} with stakes: ${stakes}`)
-      api.removeCommittee(committeeAddress, addresses, stakes).subscribe(() => onDeleteCommittee(), err => console.log(err))
+      console.log(
+        `Deleting committee with address ${committeeAddress} and members: ${addresses} with stakes: ${stakes}`
+      )
+      api
+        .removeCommittee(committeeAddress, addresses, stakes)
+        .subscribe(() => onDeleteCommittee(), err => console.log(err))
     }
 
     const ScreenTab = ({ screenName }) => {
       switch (screenName.toLowerCase()) {
         case 'info':
-          return <CommitteeInfo committee={{...committee, members, tokenAddress }} />
+          return (
+            <CommitteeInfo
+              committee={{ ...committee, members, tokenAddress }}
+            />
+          )
         case 'permissions':
-          return <div>We're are working on it</div>
+          return (
+            <CommitteePermissions
+              tmAddress={committee.address}
+              votingAddress={committee.votingAddress}
+            />
+          )
         case 'activity':
           return <CommitteeActivity committee={committee} />
         default:
@@ -139,7 +152,8 @@ const CommitteeDetails = React.memo(
 
 const CommitteeMenu = ({ address, members, unique, onRemoveCommittee }) => {
   const theme = useTheme()
-  const removeCommittee = () => onRemoveCommittee(address, ...decoupleMembers(members, unique))
+  const removeCommittee = () =>
+    onRemoveCommittee(address, ...decoupleMembers(members, unique))
 
   const actions = [[removeCommittee, IconRemove, 'Remove committee']]
   return (
