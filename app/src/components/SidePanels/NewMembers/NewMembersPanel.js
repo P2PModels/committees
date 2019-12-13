@@ -27,7 +27,7 @@ const NewMembersPanel = ({ committeeAddress, isUnique }) => {
     closePanel()
     await api.addMembers(committeeAddress, addresses, stakes).toPromise()
   }
-  
+
   const changeMembers = members => {
     setMembers(members)
   }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { useAragonApi } from '@aragon/api-react'
-import { DataView, GU, Tag, Text, useTheme, textStyle } from '@aragon/ui'
+import { DataView, Text, useTheme, textStyle } from '@aragon/ui'
 import LocalIdentityBadge from '../components/LocalIdentityBadge/LocalIdentityBadge'
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 import AnnotatedDescription from '../components/AnnotatedDescription'

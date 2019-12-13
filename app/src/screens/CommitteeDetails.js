@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { useAragonApi, useNetwork } from '@aragon/api-react'
+import { useAragonApi } from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
 import {
