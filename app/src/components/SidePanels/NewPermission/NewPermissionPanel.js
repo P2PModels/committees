@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import React, { useState } from 'react'
+import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
 
 import { DropDown } from '@aragon/ui'
@@ -25,11 +25,7 @@ async function getAppRoles(api, selectedAppAddress) {
           .filter(({ proxyAddress }) => {
             return proxyAddress === selectedAppAddress
           })
-          .map(a => {
-            console.log('here')
-            console.log(a)
-            return a.roles
-          })
+          .map(app => app.roles)
       )
     )
     .toPromise()
@@ -41,9 +37,7 @@ async function getAppRoles(api, selectedAppAddress) {
 }
 
 const NewPermissionPanel = ({ committeeApp }) => {
-  const { api, appState, installedApps } = useAragonApi()
-  const { isSyncing } = appState
-
+  const { api, installedApps } = useAragonApi()
   const [selectedApp, setSelectedApp] = useState(0)
   const [roles, setRoles] = useState([])
   const [selectedRole, setSelectedRole] = useState(0)
@@ -60,7 +54,12 @@ const NewPermissionPanel = ({ committeeApp }) => {
     }),
   ]
   const sortedFormattedApps = sortedApps.map((app, index) => {
-    if (index > 0) return <LocalAppBadge installedApp={app} />
+    if (index > 0)
+      return (
+        <StyledAppBadge>
+          <LocalAppBadge installedApp={app} />
+        </StyledAppBadge>
+      )
     else return INITIAL_APP_DROPDOWN_VALUE
   })
 
@@ -68,10 +67,6 @@ const NewPermissionPanel = ({ committeeApp }) => {
     if (index > 0) return name
     else return INITIAL_ROLE_DROPDOWN_VALUE
   })
-
-  useEffect(() => {
-    api && console.log('get data')
-  }, [isSyncing])
 
   const createPermission = async (committeeApp, app, action) => {
     const acl = await api.call('getAcl').toPromise()
@@ -84,8 +79,8 @@ const NewPermissionPanel = ({ committeeApp }) => {
 
   const selectedAppHandler = async index => {
     const selectedAppAddress = sortedApps[index].appAddress
-    console.log(sortedApps.index)
     const roles = await getAppRoles(api, selectedAppAddress)
+
     setRoles([{}, ...roles])
     setSelectedApp(index)
   }
@@ -140,4 +135,8 @@ const NewPermissionPanel = ({ committeeApp }) => {
   )
 }
 
+const StyledAppBadge = styled.div`
+  display: inline-flex;
+  margin-top: 5px;
+`
 export default NewPermissionPanel

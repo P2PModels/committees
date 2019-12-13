@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { useTheme, unselectable } from '@aragon/ui'
 
 const FieldTitle = ({ children }) => {
+  console.log('Rendering FieldTitle.')
   const theme = useTheme()
 
   return (

@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 import { useAragonApi } from '@aragon/api-react'
 import { Tag, GU } from '@aragon/ui'
@@ -32,6 +33,11 @@ function LocalAppBadge({ appAddress, installedApp }) {
       )}
     </>
   )
+}
+
+LocalAppBadge.propTypes = {
+  appAddress: PropTypes.string,
+  installedApp: PropTypes.object,
 }
 
 export default LocalAppBadge

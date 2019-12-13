@@ -5,6 +5,8 @@ import styled from 'styled-components'
 import { Card, EthIdenticon, Text, Badge } from '@aragon/ui'
 
 const CommitteeCard = ({ committee, onClickCommittee }) => {
+  console.log('Rendering CommitteeCard')
+
   const { address, name, tokenSymbol } = committee
   return (
     <StyledCard
@@ -54,9 +56,6 @@ CommitteeCard.propTypes = {
     address: PropTypes.string,
     tokenSymbol: PropTypes.string,
   }),
-  // address: PropTypes.string.isRequired,
-  // name: PropTypes.string.isRequired,
-  // tokenSymbol: PropTypes.string.isRequired,
   onClickCommittee: PropTypes.func,
 }
 

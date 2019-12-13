@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+
 import { useAragonApi } from '@aragon/api-react'
 import { DataView, GU, Tag, Text, useTheme, textStyle } from '@aragon/ui'
 import LocalIdentityBadge from '../components/LocalIdentityBadge/LocalIdentityBadge'
@@ -200,30 +202,6 @@ function ActivityLog({ heading, activities }) {
   )
 }
 
-// function LocalAppBadge({ app: appAddress }) {
-//   const { installedApps } = useAragonApi()
-//   const app = installedApps.find(
-//     installed => appAddress === toChecksumAddress(installed.appAddress)
-//   )
-//   return (
-//     <>
-//       <LocalLabelAppBadge
-//         appAddress={appAddress}
-//         label={app.name}
-//         iconSrc={app.icon()}
-//       />
-//       <Tag
-//         mode="identifier"
-//         css={`
-//           margin-left: ${1 * GU}px;
-//         `}
-//       >
-//         {app.identifier}
-//       </Tag>
-//     </>
-//   )
-// }
-
 function CommitteeActivity({ committee }) {
   const { api, appState } = useAragonApi()
   const { isSyncing } = appState
@@ -280,6 +258,18 @@ function CommitteeActivity({ committee }) {
       />
     </>
   )
+}
+
+ActivityLog.propType = {
+  heading: PropTypes.node,
+  activities: PropTypes.array.isRequired,
+}
+
+CommitteeActivity.propType = {
+  committee: PropTypes.shape({
+    address: PropTypes.string,
+    votingAddress: PropTypes.string,
+  }),
 }
 
 export default CommitteeActivity

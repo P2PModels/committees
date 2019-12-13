@@ -5,12 +5,8 @@ import { SidePanelSeparator, textStyle, useTheme } from '@aragon/ui'
 import { FieldTitle } from './index'
 
 const FormField = ({ input, label, hint, required, separator, err }) => {
-  // TODO: Currently it will only work with 1 required child
-  // const isRequired = React.Children.toArray(children).some(
-  //   ({ props: childProps }) => childProps.required
-  // )
   const theme = useTheme()
-  console.log(label)
+  console.log('Rendering FormField')
   return (
     <div style={{ marginBottom: '1rem' }}>
       <FieldTitle>
@@ -81,7 +77,6 @@ const FormField = ({ input, label, hint, required, separator, err }) => {
 }
 
 FormField.propTypes = {
-  children: PropTypes.node,
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,

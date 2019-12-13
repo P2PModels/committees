@@ -1,4 +1,6 @@
 import React from 'react'
+import PropTypes from 'prop-types'
+
 import { useNetwork } from '@aragon/api-react'
 import { IdentityBadge } from '@aragon/ui'
 import { useIdentity } from '../../identity-manager'
@@ -27,6 +29,7 @@ const LocalIdentityBadge = ({ entity, ...props }) => {
 }
 
 LocalIdentityBadge.propTypes = {
+  entity: PropTypes.string,
   ...IdentityBadge.propTypes,
 }
 

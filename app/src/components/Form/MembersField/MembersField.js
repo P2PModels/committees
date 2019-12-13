@@ -6,7 +6,6 @@ import { Button, Field, IconPlus, theme, textStyle, GU } from '@aragon/ui'
 import MemberField from './MemberField/MemberField'
 
 function useFieldsLayout() {
-  // In its own hook to be adapted for smaller views
   return `
     display: grid;
     grid-template-columns: auto ${12 * GU}px;
@@ -16,6 +15,7 @@ function useFieldsLayout() {
 
 const MembersField = React.forwardRef(
   ({ members, onChange, accountStake }, ref) => {
+    console.log('Rendering MembersField.')
     const [focusLastMemberNext, setFocusLastMemberNext] = useState(false)
 
     const membersRef = useRef()
@@ -23,19 +23,9 @@ const MembersField = React.forwardRef(
     const fieldsLayout = useFieldsLayout()
 
     useEffect(() => {
-      if (!focusLastMemberNext || !membersRef.current) {
-        return
-      }
+      if (!focusLastMemberNext || !membersRef.current) return
 
       setFocusLastMemberNext(false)
-
-      // This could be managed in individual MemberField components, but using
-      // the container with a .member class makes it simpler to manage, since we
-      // want to focus in three cases:
-      //   - A new field is being added.
-      //   - A field is being removed.
-      //   - The first field is being emptied.
-      //
       const elts = membersRef.current.querySelectorAll('.member')
       if (elts.length > 0) {
         elts[elts.length - 1].querySelector('input').focus()

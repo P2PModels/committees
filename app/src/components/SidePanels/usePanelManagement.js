@@ -20,10 +20,10 @@ const usePanelManagement = () => {
         isUnique,
       })
     },
-    setUpNewPermission: committeeApp => {
+    setUpNewPermission: (type, committeeApp) => {
       setActivePanel(PANELS.NewPermissionPanel)
       setPanelProps({
-        title: 'New Permission',
+        title: `New ${type} Permission`,
         committeeApp,
       })
     },

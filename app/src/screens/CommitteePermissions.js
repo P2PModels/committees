@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react'
-import { useAragonApi, useAppState } from '@aragon/api-react'
+import { useAragonApi } from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
 
-import { toChecksumAddress, keccak256 } from 'web3-utils'
+import { toChecksumAddress } from 'web3-utils'
 
 import {
-  Split,
   ContextMenu,
   ContextMenuItem,
   DataView,
-  Header,
   Tag,
   IconRemove,
   textStyle,
   Button,
+  IconPlus,
   useTheme,
+  useLayout,
   GU,
 } from '@aragon/ui'
 
-import { PanelManager, usePanelManagement } from '../components/SidePanels/'
+import { usePanelManagement } from '../components/SidePanels/'
 
 import { map, first } from 'rxjs/operators'
 
@@ -161,7 +161,7 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
             title="Individual Permissions"
             permissions={tokenPermissions}
             btnLabel="New Individual Permission"
-            onClickBtn={() => setUpNewPermission(tmAddress)}
+            onClickBtn={() => setUpNewPermission('Individual', tmAddress)}
           />
         }
         status={tokenPermissions ? 'default' : 'loading'}
@@ -181,9 +181,9 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
         heading={
           <PermissionHeader
             title="Group Permissions"
-            permissions={tokenPermissions}
+            permissions={votingPermissions}
             btnLabel="New Group Permission"
-            onClickBtn={() => setUpNewPermission(votingAddress)}
+            onClickBtn={() => setUpNewPermission('Group', votingAddress)}
           />
         }
         status={votingPermissions ? 'default' : 'loading'}
@@ -243,6 +243,10 @@ const EntryActions = ({ committeeApp, app, role, onDeletePermission }) => {
 
 const PermissionHeader = ({ title, permissions, btnLabel, onClickBtn }) => {
   const theme = useTheme()
+  const { layoutName } = useLayout()
+
+  const compactMode = layoutName === 'small'
+
   return (
     <React.Fragment>
       <div
@@ -263,11 +267,29 @@ const PermissionHeader = ({ title, permissions, btnLabel, onClickBtn }) => {
           {permissions && <Tag>{permissions.length}</Tag>}
         </div>
         {btnLabel && (
-          <Button onClick={onClickBtn} mode="strong" label={btnLabel} />
+          <Button
+            onClick={onClickBtn}
+            mode="strong"
+            label={btnLabel}
+            icon={<IconPlus />}
+            display={compactMode ? 'icon' : 'label'}
+          />
         )}
       </div>
     </React.Fragment>
   )
+}
+
+CommitteePermissions.propTypes = {
+  tmAddress: PropTypes.string,
+  votingAddress: PropTypes.string,
+}
+
+PermissionHeader.propTypes = {
+  title: PropTypes.string.isRequired,
+  permissions: PropTypes.array,
+  btnLabel: PropTypes.string,
+  onClickBtn: PropTypes.func,
 }
 
 export default CommitteePermissions

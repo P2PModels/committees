@@ -3,6 +3,7 @@ import React from 'react'
 import { Button, Text, theme } from '@aragon/ui'
 
 const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
+  console.log('Rendering Form.')
   return (
     <React.Fragment>
       {heading && <Text size="xxlarge">{heading}</Text>}

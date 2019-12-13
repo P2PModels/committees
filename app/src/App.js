@@ -6,7 +6,9 @@ import {
   Button,
   BaseStyles,
   Header,
+  IconPlus,
   useTheme,
+  useLayout,
   textStyle,
 } from '@aragon/ui'
 
@@ -22,14 +24,17 @@ import CommitteeDetails from './screens/CommitteeDetails'
 
 function App() {
   const theme = useTheme()
-  const { api, appState } = useAragonApi()
+  const { layoutName } = useLayout()
+  const { appState } = useAragonApi()
 
-  const { committees, isSyncing } = appState
+  const { committees } = appState
 
   const [selectedCommittee, setSelectedCommittee] = useState(null)
   const [screenName, setScreenName] = useState('committees')
   const [panel, setPanel] = useState(null)
   const [panelProps, setPanelProps] = useState(null)
+
+  const compactMode = layoutName === 'small'
 
   const panelConfiguration = {
     setActivePanel: p => setPanel(p),
@@ -42,11 +47,7 @@ function App() {
   }
 
   const ScreenAction = () => {
-    const {
-      setupNewCommittee,
-      setupNewMembers,
-      setUpNewPermission,
-    } = usePanelManagement()
+    const { setupNewCommittee, setupNewMembers } = usePanelManagement()
 
     switch (screenName) {
       case 'committees':
@@ -55,6 +56,8 @@ function App() {
             mode="strong"
             onClick={() => setupNewCommittee()}
             label="New Committee"
+            icon={<IconPlus />}
+            display={compactMode ? 'icon' : 'label'}
           />
         )
       case 'info':
@@ -69,14 +72,8 @@ function App() {
                 )
             }}
             label="New Member"
-          />
-        )
-      case 'permissions':
-        return (
-          <Button
-            mode="strong"
-            onClick={() => setUpNewPermission}
-            label="New Permission"
+            icon={<IconPlus />}
+            display={compactMode ? 'icon' : 'label'}
           />
         )
       default:
@@ -170,13 +167,6 @@ const NoCommitteesLayout = styled.div`
   align-items: center;
   justify-content: center;
 `
-
-const Syncing = styled.div.attrs({ children: 'Syncing…' })`
-  position: absolute;
-  top: 15px;
-  right: 20px;
-`
-
 export default () => {
   return (
     <Main>

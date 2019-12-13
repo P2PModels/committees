@@ -25,6 +25,7 @@ const Committees = ({ committees, onClickCommittee }) => {
 const StyledCommittees = styled.div`
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
 `
 Committees.propTypes = {
   committees: PropTypes.array,

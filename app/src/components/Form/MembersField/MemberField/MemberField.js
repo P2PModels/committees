@@ -2,19 +2,16 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import {
   TextInput,
-  // IconTrash,
   IconRemove,
   Button,
   EthIdenticon,
   theme,
   isAddress,
+  GU,
+  RADIUS,
 } from '@aragon/ui'
 
-const GU = 8
-const RADIUS = 4
-
 function useFieldsLayout() {
-  // In its own hook to be adapted for smaller views
   return `
     display: grid;
     grid-template-columns: auto ${12 * GU}px;
@@ -27,7 +24,7 @@ const MemberField = React.forwardRef(
     { index, member, hideRemoveButton, onUpdate, onRemove, displayStake },
     ref
   ) => {
-    // const theme = useTheme()
+    console.log('Rendering MemberField.')
     const fieldsLayout = useFieldsLayout()
 
     const [account, stake] = member

@@ -1,8 +1,9 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
-import { Button, EmptyStateCard, GU, LoadingRing } from '@aragon/ui'
+import { EmptyStateCard, GU, LoadingRing } from '@aragon/ui'
 
-const NoCommittees = React.memo(({ onNewCommittee, isSyncing , children}) => {
+const NoCommittees = React.memo(({ isSyncing, children }) => {
   return (
     <EmptyStateCard
       text={
@@ -23,11 +24,13 @@ const NoCommittees = React.memo(({ onNewCommittee, isSyncing , children}) => {
           'Oops! There a no committees.'
         )
       }
-      action={
-        children
-      }
+      action={children}
     />
   )
 })
+
+NoCommittees.propTypes = {
+  isSyncing: PropTypes.bool,
+}
 
 export default NoCommittees

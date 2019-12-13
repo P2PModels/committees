@@ -51,45 +51,53 @@ const CommitteeInfo = ({
       primary={
         <React.Fragment>
           <Box>{description}</Box>
-          {!members ||
-            (members.length === 0 && (
-              <NoMembers>There are no members.</NoMembers>
-            ))}
-          {members && members.length > 0 && (
-            <DataView
-              mode="table"
-              heading={
-                <React.Fragment>
-                  <span
-                    css={`
-                      color: ${theme.surfaceContentSecondary};
-                      ${textStyle('label1')}
-                    `}
-                  >
-                    Members
-                  </span>
-                  <Tag>{members.length}</Tag>
-                </React.Fragment>
-              }
-              fields={['account']}
-              entries={members.map(member => {
-                const [account, stake] = member
-                return { account, stake }
-              })}
-              renderEntry={({ account }) => {
-                return [<IdentityBadge entity={account} />]
-              }}
-              renderEntryActions={({ account, stake }) => (
-                <EntryActions
-                  address={account}
-                  stake={stake}
-                  onDeleteMember={(member, stake) => {
-                    removeMemberHandler(address, member, stake)
-                  }}
-                />
-              )}
-            />
-          )}
+          <DataView
+            mode="table"
+            heading={
+              <React.Fragment>
+                <span
+                  css={`
+                    color: ${theme.surfaceContentSecondary};
+                    ${textStyle('label1')}
+                  `}
+                >
+                  Members
+                </span>
+                {members && <Tag>{members.length}</Tag>}
+              </React.Fragment>
+            }
+            status={members ? 'default' : 'loading'}
+            statusEmpty={
+              <div
+                css={`
+                  ${textStyle('title2')}
+                `}
+              >
+                No members
+              </div>
+            }
+            fields={['account']}
+            entries={
+              (members &&
+                members.map(member => {
+                  const [account, stake] = member
+                  return { account, stake }
+                })) ||
+              []
+            }
+            renderEntry={({ account }) => {
+              return [<IdentityBadge entity={account} />]
+            }}
+            renderEntryActions={({ account, stake }) => (
+              <EntryActions
+                address={account}
+                stake={stake}
+                onDeleteMember={(member, stake) => {
+                  removeMemberHandler(address, member, stake)
+                }}
+              />
+            )}
+          />
         </React.Fragment>
       }
       secondary={
@@ -208,16 +216,6 @@ const InfoRow = styled.div`
     ${textStyle('body3')}
   }
 `
-
-const NoMembers = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20% auto 0 auto;
-  ${textStyle('title4')}
-`
-
 CommitteeInfo.propTypes = {
   committee: PropTypes.shape({
     name: PropTypes.string,

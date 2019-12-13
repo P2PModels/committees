@@ -69,7 +69,7 @@ const CommitteeDetails = React.memo(
     const { api, appState } = useAragonApi()
     const { isSyncing } = appState
     const [activeTabIndex, setActiveTabIndex] = useState(0)
-    const [members, setMembers] = useState([])
+    const [members, setMembers] = useState(null)
     const [tokenAddress, setTokenAddress] = useState('')
 
     const tokenType = getTokenType(committee.tokenParams)
@@ -188,6 +188,7 @@ CommitteeDetails.propTypes = {
   committee: PropTypes.object,
   onBack: PropTypes.func,
   onChangeTab: PropTypes.func,
+  onDeleteCommittee: PropTypes.func,
 }
 
 export default CommitteeDetails

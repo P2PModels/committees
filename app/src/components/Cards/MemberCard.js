@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import { Card, Button, EthIdenticon, IdentityBadge } from '@aragon/ui'
 
 const MemberCard = ({ address, onRemove }) => {
+  console.log('Rendering MemberCard.')
   return (
     <StyledCard width="200px" height="200px">
       <CardHeader>
@@ -32,9 +33,6 @@ const StyledCard = styled(Card)`
 
 const deleteButtonStyle = {
   marginRight: '8%',
-}
-const addressStyle = {
-  marginTop: '100%',
 }
 
 const CardHeader = styled.div`
