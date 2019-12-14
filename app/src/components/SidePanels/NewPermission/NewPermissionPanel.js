@@ -8,33 +8,10 @@ import { Form, FormField } from '../../Form'
 import LocalAppBadge from '../../LocalIdentityBadge/LocalAppBadge'
 import { usePanelManagement } from '../../SidePanels'
 
-import { map, first } from 'rxjs/operators'
-
-import aclAbi from '../../../abi/ACL.json'
+import { getAclHandler, getAppRoles } from '../../../lib/acl-utils'
 
 const INITIAL_APP_DROPDOWN_VALUE = 'Select an app'
 const INITIAL_ROLE_DROPDOWN_VALUE = 'Select role'
-
-async function getAppRoles(api, selectedAppAddress) {
-  const appRoles = await api
-    .getApps()
-    .pipe(
-      first(),
-      map(app =>
-        app
-          .filter(({ proxyAddress }) => {
-            return proxyAddress === selectedAppAddress
-          })
-          .map(app => app.roles)
-      )
-    )
-    .toPromise()
-  return appRoles[0].sort((a, b) => {
-    if (a.name < b.name) return -1
-    if (a.name > b.name) return 1
-    return 0
-  })
-}
 
 const NewPermissionPanel = ({ committeeApp }) => {
   const { api, installedApps } = useAragonApi()
@@ -69,8 +46,7 @@ const NewPermissionPanel = ({ committeeApp }) => {
   })
 
   const createPermission = async (committeeApp, app, action) => {
-    const acl = await api.call('getAcl').toPromise()
-    const aclHandler = api.external(acl, aclAbi)
+    const aclHandler = await getAclHandler(api)
     console.log(
       `Committee app ${committeeApp} now has role ${action} on app ${app}`
     )

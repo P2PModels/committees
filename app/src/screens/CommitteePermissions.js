@@ -3,112 +3,33 @@ import { useAragonApi } from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
 
-import { toChecksumAddress } from 'web3-utils'
-
 import {
-  ContextMenu,
-  ContextMenuItem,
+  ButtonIcon,
   DataView,
   Tag,
-  IconRemove,
+  IconTrash,
   textStyle,
   Button,
   IconPlus,
   useTheme,
   useLayout,
-  GU,
 } from '@aragon/ui'
 
 import { usePanelManagement } from '../components/SidePanels/'
 
-import { map, first } from 'rxjs/operators'
+import { getRoles, getPermissions, getAclHandler } from '../lib/acl-utils'
 
-import aclAbi from '../abi/ACL.json'
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 
-async function getACLPermissions(api, aclHandler) {
-  const permissions = await aclHandler
-    .pastEvents({
-      fromBlock: '0x0',
-    })
-    .pipe(
-      map(event =>
-        event
-          .filter(e => e.event.toLowerCase() === 'setpermission')
-          .map(({ returnValues: { entity, app, role, allowed }, logIndex }) => {
-            return {
-              logIndex,
-              entity,
-              app,
-              role,
-              allowed,
-            }
-          })
-      )
-    )
-    .toPromise()
-
-  return permissions
-}
-
-async function filterCommitteeAppsPermissions(aclPermissions, committeeApps) {
-  // key: concat(app, role)
-  const tokenPermissions = new Map()
-  const votingPermissions = new Map()
-  const tokenRes = []
-  const votingRes = []
-  aclPermissions.forEach(p => {
-    const key = p.app.concat(p.role)
-    const entity = toChecksumAddress(p.entity)
-    if (committeeApps.tokenManager === entity) tokenPermissions.set(key, p)
-    else if (committeeApps.voting === entity) votingPermissions.set(key, p)
-  })
-
-  tokenPermissions.forEach(val => {
-    if (val.allowed) tokenRes.push(val)
-  })
-  votingPermissions.forEach(val => {
-    if (val.allowed) votingRes.push(val)
-  })
-
-  return [tokenRes, votingRes]
-}
-
-async function getRoles(api) {
-  const appRoles = await api
-    .getApps()
-    .pipe(
-      first(),
-      map(app => app.map(({ roles }) => roles))
-    )
-    .toPromise()
-
-  const roleRegistry = []
-  /* Destructure every app's set of roles */
-  appRoles.forEach(roles => roleRegistry.push(...roles))
-
-  /* Create a role registry where the key is the permission bytes
-   value and there are no duplicate permissions */
-  const formattedRoleRegistry = roleRegistry.reduce(
-    (formattedRoleRegistry, { bytes, name }) => {
-      formattedRoleRegistry[bytes] = name
-      return formattedRoleRegistry
-    },
-    {}
-  )
-
-  return formattedRoleRegistry
-}
-
-async function getAclHandler(api) {
-  const acl = await api.call('getAcl').toPromise()
-  return api.external(acl, aclAbi)
-}
-async function getPermissions(api, committeeApps) {
-  const aclHandler = await getAclHandler(api)
-  const aclPermissions = await getACLPermissions(api, aclHandler)
-  return filterCommitteeAppsPermissions(aclPermissions, committeeApps)
-}
+const emptyState = individual => (
+  <div
+    css={`
+      ${textStyle('title2')}
+    `}
+  >
+    No {individual ? 'individual' : 'group'} permissions
+  </div>
+)
 
 const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
   const { api, appState } = useAragonApi()
@@ -119,16 +40,6 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
   const [roleRegistry, setRoleRegistry] = useState({})
 
   const { setUpNewPermission } = usePanelManagement()
-
-  const emptyState = individual => (
-    <div
-      css={`
-        ${textStyle('title2')}
-      `}
-    >
-      No {individual ? 'individual' : 'group'} permissions
-    </div>
-  )
 
   useEffect(() => {
     api &&
@@ -150,94 +61,80 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
 
   const deletePermissionHandler = async (entity, app, role) => {
     const aclHandler = await getAclHandler(api)
-    aclHandler.revokePermission(entity, app, role).toPromise()
+    aclHandler
+      .revokePermission(entity.toLowerCase(), app.toLowerCase(), role)
+      .toPromise()
   }
 
   return (
     <React.Fragment>
-      <DataView
-        heading={
-          <PermissionHeader
-            title="Individual Permissions"
-            permissions={tokenPermissions}
-            btnLabel="New Individual Permission"
-            onClickBtn={() => setUpNewPermission('Individual', tmAddress)}
-          />
-        }
-        status={tokenPermissions ? 'default' : 'loading'}
-        statusEmpty={emptyState(true)}
-        fields={['role', 'on app', '']}
-        entries={tokenPermissions || []}
-        renderEntry={({ app, role }) => [
-          <span>{roleRegistry[role]}</span>,
-          <LocalAppBadge appAddress={app} />,
-          null,
-        ]}
-        renderEntryActions={({ app, role }) => (
-          <EntryActions committeeAppAddress={tmAddress} app={app} role={role} />
-        )}
+      <PermissionsTable
+        type="Individual"
+        permissions={tokenPermissions}
+        roleRegistry={roleRegistry}
+        address={tmAddress}
+        setUpNewPermission={setUpNewPermission}
+        deletePermissionHandler={deletePermissionHandler}
       />
-      <DataView
-        heading={
-          <PermissionHeader
-            title="Group Permissions"
-            permissions={votingPermissions}
-            btnLabel="New Group Permission"
-            onClickBtn={() => setUpNewPermission('Group', votingAddress)}
-          />
-        }
-        status={votingPermissions ? 'default' : 'loading'}
-        statusEmpty={emptyState(false)}
-        fields={['role', 'On App', '']}
-        entries={votingPermissions || []}
-        renderEntry={({ app, role }) => [
-          <span>{roleRegistry[role]}</span>,
-          <LocalAppBadge appAddress={app} />,
-          null,
-        ]}
-        renderEntryActions={({ app, role }) => (
-          <EntryActions
-            committeeApp={tmAddress}
-            app={app}
-            role={role}
-            onDeletePermission={deletePermissionHandler}
-          />
-        )}
+      <PermissionsTable
+        type="Group"
+        permissions={votingPermissions}
+        roleRegistry={roleRegistry}
+        address={votingAddress}
+        setUpNewPermission={setUpNewPermission}
+        deletePermissionHandler={deletePermissionHandler}
       />
     </React.Fragment>
   )
 })
 
-const EntryActions = ({ committeeApp, app, role, onDeletePermission }) => {
-  const theme = useTheme()
-  const removeMember = () => onDeletePermission(committeeApp, app, role)
+const PermissionsTable = ({
+  type,
+  permissions,
+  roleRegistry,
+  address,
+  setUpNewPermission,
+  deletePermissionHandler,
+}) => (
+  <DataView
+    heading={
+      <PermissionHeader
+        title={`${type} permissions`}
+        permissions={permissions}
+        btnLabel="New permission"
+        onClickBtn={() => setUpNewPermission(type, address)}
+      />
+    }
+    status={permissions ? 'default' : 'loading'}
+    statusEmpty={emptyState(true)}
+    fields={['role', 'on app', '']}
+    entries={permissions || []}
+    renderEntry={({ app, role }) => [
+      <span>{roleRegistry[role]}</span>,
+      <LocalAppBadge appAddress={app} />,
+      null,
+    ]}
+    renderEntryActions={({ entity, app, role }) => (
+      <EntryActions
+        onRevokePermission={() => deletePermissionHandler(entity, app, role)}
+      />
+    )}
+  />
+)
 
-  const actions = [[removeMember, IconRemove, 'Remove Permission']]
+const EntryActions = ({ onRevokePermission }) => {
+  const theme = useTheme()
   return (
-    <ContextMenu zIndex={1}>
-      {actions.map(([onClick, Icon, label], index) => (
-        <ContextMenuItem onClick={onClick} key={index}>
-          <span
-            css={`
-              position: relative;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: ${theme.surfaceContentSecondary};
-            `}
-          >
-            <Icon />
-          </span>
-          <span
-            css={`
-              margin-left: ${1 * GU}px;
-            `}
-          >
-            {label}
-          </span>
-        </ContextMenuItem>
-      ))}
-    </ContextMenu>
+    <ButtonIcon
+      label="Revoke permission"
+      mode="button"
+      onClick={onRevokePermission}
+      css={`
+        color: ${theme.negative};
+      `}
+    >
+      <IconTrash />
+    </ButtonIcon>
   )
 }
 
