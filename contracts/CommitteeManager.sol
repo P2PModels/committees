@@ -55,6 +55,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     string private constant ERROR_MINIME_FACTORY_NOT_CONTRACT = "MINIME_FACTORY_NOT_CONTRACT";
     string private constant ERROR_ENS_NOT_CONTRACT = "ENS_NOT_CONTRACT";
     string private constant ERROR_ENTITY_NOT_CONTRACT = "ENTITY_NOT_CONTRACT";
+    string private constant ERROR_NOT_IMPLEMENTED_YET = "NOT_IMPLEMENTED_YET";
 
 
     modifier committeeExists(address _committee) {
@@ -201,32 +202,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         committeeExists(_committee)
         authP(DELETE_COMMITTEE_ROLE, _arr(_committee))
     {
-        Kernel _dao = Kernel(kernel());
-        ACL acl = ACL(_dao.acl());
-        Committee c = committees[_committee];
-        TokenManager tm = TokenManager(_committee);
-
-        //Delete all members
-        _burnTokens(tm, _members);
-
-        //Revoke token manager permissions
-        _revokeTokenManagerPermissions(acl, tm, manager);
-        _revokeTokenManagerPermissions(acl, tm, this);
-
-        //Burn permission manager so no one can't set it never again.
-        _burnTokenManagerPermissionManager(acl, tm);
-
-
-        if (c.finance != address(0)) {
-            Finance finance = Finance(c.finance);
-            _revokeAndBurnVaultPermissions(acl, finance.vault(), finance);
-            _revokeFinancePermissions(acl, finance, c.voting);
-            _burnFinancePermissionManager(acl, finance);
-        }
-
-        delete committees[_committee];
-
-        emit RemoveCommittee(_committee);
+        revert(ERROR_NOT_IMPLEMENTED_YET);
     }
 
     /**
