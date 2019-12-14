@@ -44,9 +44,14 @@ async function getMembers(api, tmAddress) {
     ),
   ]
 
-  const filteredMembers = (await Promise.all(
-    members.map(async m => [m, parseInt(await token.balanceOf(m).toPromise())])
-  )).filter(m => m[1] > 0)
+  const filteredMembers = (
+    await Promise.all(
+      members.map(async m => [
+        m,
+        parseInt(await token.balanceOf(m).toPromise()),
+      ])
+    )
+  ).filter(m => m[1] > 0)
 
   return [filteredMembers, tokenAddress]
 }

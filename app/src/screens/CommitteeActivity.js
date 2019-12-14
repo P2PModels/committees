@@ -7,8 +7,6 @@ import LocalIdentityBadge from '../components/LocalIdentityBadge/LocalIdentityBa
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 import AnnotatedDescription from '../components/AnnotatedDescription'
 
-// http://localhost:39967/#/0xc0Bb2ce43F3933beadF371b6d67795BecC1E5396/0xa15cc45a8751bcc2794fdd955ec49efc9615e4cc/
-
 import { map } from 'rxjs/operators'
 import { format } from 'date-fns'
 import { toChecksumAddress, keccak256 } from 'web3-utils'
@@ -54,9 +52,11 @@ async function getTransactionsFromLogs(api, apps, logs) {
     ...new Set(logs.map(({ transactionHash }) => transactionHash)),
   ]
   // Get transaction objects and filter by transactions that belong to apps
-  const txs = (await Promise.all(
-    txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
-  )).filter(({ to }) => apps.includes(toChecksumAddress(to)))
+  const txs = (
+    await Promise.all(
+      txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
+    )
+  ).filter(({ to }) => apps.includes(toChecksumAddress(to)))
   return txs
 }
 

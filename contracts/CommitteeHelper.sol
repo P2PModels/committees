@@ -136,7 +136,7 @@ contract CommitteeHelper is APMNamehash, IsContract {
         _acl.grantPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE());
     }
 
-    function _revokeTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _entity) {
+    function _revokeTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _entity) internal {
         _acl.revokePermission(_entity, _tokenManager, _tokenManager.MINT_ROLE());
         _acl.revokePermission(_entity, _tokenManager, _tokenManager.BURN_ROLE());
     }
