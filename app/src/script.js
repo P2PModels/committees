@@ -8,10 +8,7 @@ import votingAbi from './abi/Voting.json'
 
 import { hexToUtf8 } from 'web3-utils'
 
-import {
-  updateCommitteesMembers,
-  deleteCommittee,
-} from '../src/lib/committee-utils'
+import { deleteCommittee } from '../src/lib/committee-utils'
 
 const INITIAL_STATE = {
   committees: [],
@@ -41,7 +38,7 @@ api.store(async (state, { event, returnValues }) => {
         description,
       } = returnValues
       const tm = api.external(address, tmAbi)
-      //Get token info
+      // Get token info
       const [tokenAddress, maxAccountTokens] = await Promise.all([
         tm.token().toPromise(),
         tm.maxAccountTokens().toPromise(),
@@ -52,7 +49,7 @@ api.store(async (state, { event, returnValues }) => {
         token.decimals().toPromise(),
         token.transfersEnabled().toPromise(),
       ])
-      //Get voting info
+      // Get voting info
       const voting = api.external(votingAddress, votingAbi)
       const [
         supportRequiredPct,

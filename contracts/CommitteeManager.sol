@@ -159,25 +159,6 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Delete member `_member` from committee `_committee`.
-     * @param _committee Committee's address
-     * @param _member Committee's member address.
-     */
-    function removeMember(
-        address _committee,
-        address _member,
-        uint256 _stake
-    )
-        external
-        committeeExists(_committee)
-        memberExists(_committee, _member)
-        auth(EDIT_COMMITTEE_MEMBERS_ROLE)
-    {
-        address tmAddress = _committee;
-        _burnTokens(TokenManager(tmAddress), _member, _stake);
-    }
-
-    /**
      * @notice Delete committee.
      * @param _committee Committee address
      * @param _members Members addreses.
@@ -304,4 +285,24 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         _createFinanceCreatePaymentsPermission(acl, finance, _grantee, this);
         committees[_committee].finance = finance;
     }
+
+
+    // /**
+    //  * @notice Delete member `_member` from committee `_committee`.
+    //  * @param _committee Committee's address
+    //  * @param _member Committee's member address.
+    //  */
+    // function removeMember(
+    //     address _committee,
+    //     address _member,
+    //     uint256 _stake
+    // )
+    //     external
+    //     committeeExists(_committee)
+    //     memberExists(_committee, _member)
+    //     auth(EDIT_COMMITTEE_MEMBERS_ROLE)
+    // {
+    //     address tmAddress = _committee;
+    //     _burnTokens(TokenManager(tmAddress), _member, _stake);
+    // }
 }

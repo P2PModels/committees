@@ -2,16 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useAragonApi } from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
-import {
-  BackButton,
-  Bar,
-  Tabs,
-  ContextMenu,
-  ContextMenuItem,
-  IconRemove,
-  useTheme,
-  GU,
-} from '@aragon/ui'
+import { BackButton, Bar, Tabs } from '@aragon/ui'
 
 import CommitteeInfo from './CommitteeInfo'
 import CommitteePermissions from './CommitteePermissions'
@@ -21,8 +12,6 @@ import { map } from 'rxjs/operators'
 
 import tmAbi from '../abi/TokenManager.json'
 import tokenAbi from '../abi/minimeToken.json'
-
-import { decoupleMembers, getTokenType } from '../lib/committee-utils'
 
 const tabs = [
   { name: 'Info', body: 'CommitteeInfo' },
@@ -72,8 +61,6 @@ const CommitteeDetails = React.memo(
     const [members, setMembers] = useState(null)
     const [tokenAddress, setTokenAddress] = useState('')
 
-    const tokenType = getTokenType(committee.tokenParams)
-
     useEffect(() => {
       api &&
         getMembers(api, committee.address).then(res => {
@@ -89,15 +76,6 @@ const CommitteeDetails = React.memo(
       },
       [tabs]
     )
-
-    const deleteCommitteeHandler = (committeeAddress, addresses, stakes) => {
-      console.log(
-        `Deleting committee with address ${committeeAddress} and members: ${addresses} with stakes: ${stakes}`
-      )
-      api
-        .removeCommittee(committeeAddress, addresses, stakes)
-        .subscribe(() => onDeleteCommittee(), err => console.log(err))
-    }
 
     const ScreenTab = ({ screenName }) => {
       switch (screenName.toLowerCase()) {
@@ -122,17 +100,7 @@ const CommitteeDetails = React.memo(
     }
     return (
       <React.Fragment>
-        <Bar
-          primary={<BackButton onClick={onBack} />}
-          secondary={
-            <CommitteeMenu
-              address={committee.address}
-              members={members}
-              unique={tokenType.unique}
-              onRemoveCommittee={deleteCommitteeHandler}
-            />
-          }
-        />
+        <Bar primary={<BackButton onClick={onBack} />} />
         <Tabs
           items={tabs.map(t => t.name)}
           selected={activeTabIndex}
@@ -149,40 +117,6 @@ const CommitteeDetails = React.memo(
     )
   }
 )
-
-const CommitteeMenu = ({ address, members, unique, onRemoveCommittee }) => {
-  const theme = useTheme()
-  const removeCommittee = () =>
-    onRemoveCommittee(address, ...decoupleMembers(members, unique))
-
-  const actions = [[removeCommittee, IconRemove, 'Remove committee']]
-  return (
-    <ContextMenu zIndex={1}>
-      {actions.map(([onClick, Icon, label], index) => (
-        <ContextMenuItem key={index} onClick={onClick}>
-          <span
-            css={`
-              position: relative;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: ${theme.surfaceContentSecondary};
-            `}
-          >
-            <Icon />
-          </span>
-          <span
-            css={`
-              margin-left: ${1 * GU}px;
-            `}
-          >
-            {label}
-          </span>
-        </ContextMenuItem>
-      ))}
-    </ContextMenu>
-  )
-}
 
 CommitteeDetails.propTypes = {
   committee: PropTypes.object,
