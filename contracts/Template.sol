@@ -76,7 +76,7 @@ contract Template is TemplateBase {
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         address root = msg.sender;
-        bytes32 appId = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("committee-manager-app")));
+        bytes32 appId = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("committees")));
 
         Vault vault = Vault(dao.newAppInstance(VAULT_APP_ID, latestVersionAppBase(VAULT_APP_ID)));
         Finance finance = Finance(dao.newAppInstance(FINANCE_APP_ID, latestVersionAppBase(FINANCE_APP_ID)));
@@ -97,12 +97,12 @@ contract Template is TemplateBase {
 
         // Set token manager permissions
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
-        acl.createPermission(voting, tokenManager, tokenManager.BURN_ROLE(), this);
+        acl.createPermission(voting, tokenManager, tokenManager.BURN_ROLE(), voting);
         acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
-        acl.grantPermission(voting, tokenManager, tokenManager.BURN_ROLE());
 
         tokenManager.mint(root, 1); // Give one token to root
-        //Set voting permissions
+
+        // Set voting permissions
         acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.grantPermission(voting, dao, dao.APP_MANAGER_ROLE());
 
@@ -129,7 +129,6 @@ contract Template is TemplateBase {
 
         // Clean up permissions
         acl.grantPermission(voting, dao, dao.APP_MANAGER_ROLE());
-
         acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(voting, dao, dao.APP_MANAGER_ROLE());
 
