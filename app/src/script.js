@@ -8,7 +8,7 @@ import votingAbi from './abi/Voting.json'
 
 import { hexToUtf8 } from 'web3-utils'
 
-import { DEFAULT_ADDRESS } from '../src/lib/committee-utils'
+import { DEFAULT_ADDRESS, PCT, DAYS } from '../src/lib/committee-utils'
 
 const INITIAL_STATE = {
   committees: [],
@@ -66,9 +66,9 @@ api.store(async (state, { event, returnValues }) => {
       const isUnique = maxAccountTokens === '1' && decimals === '0'
       const tokenParams = [isTransferable, isUnique]
       const votingParams = [
-        supportRequiredPct / 10 ** 16,
-        minAcceptQuorumPct / 10 ** 16,
-        voteTime / (60 * 60 * 24),
+        supportRequiredPct / PCT,
+        minAcceptQuorumPct / PCT,
+        voteTime / DAYS,
       ]
 
       const initialMembers = []

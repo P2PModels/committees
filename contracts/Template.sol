@@ -155,7 +155,7 @@ contract Template is TemplateBase {
         initialMembers[1] = 0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb;
         stakes[0] = 1;
         stakes[1] = 1;
-        uint64[3] memory votingParams = [uint64(99), 99, 30];
+        uint64[3] memory votingParams = [uint64(99 * PCT), 99 * PCT, 30 days];
         app.createCommittee(
             hex"004d656d62657273686970", // Membership
             "This a sample description nothing important to see here",
@@ -173,7 +173,7 @@ contract Template is TemplateBase {
         uint256[] memory stakes = new uint256[](1);
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
         stakes[0] = 1;
-        uint64[3] memory votingParams = [uint64(50), 15, 30];
+        uint64[3] memory votingParams = [uint64(50 * PCT), 15 * PCT, 30 days];
         app.createFinancialCommittee(
             hex"00426f756e74696573", // Bounties
             "This a sample description nothing important to see here",
@@ -191,7 +191,7 @@ contract Template is TemplateBase {
         uint256[] memory stakes = new uint256[](1);
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
         stakes[0] = 1;
-        uint64[3] memory votingParams = [uint64(50), 50, 30];
+        uint64[3] memory votingParams = [uint64(50 * PCT), 50 * PCT, 30 days];
         app.createFinancialCommittee(
             hex"0046696e616e6365", // Finance
             "This a sample description nothing important to see here",

@@ -6,6 +6,9 @@ export const DEFAULT_TOKEN_TYPES = [
   { name: 'Reputation', transferable: false, unique: false },
 ]
 
+export const PCT = 10 ** 16
+export const DAYS = 60 * 60 * 24
+
 const DEFAULT_VOTING_DURATION = 30
 export const DEFAULT_VOTING_TYPES = [
   {
@@ -30,7 +33,6 @@ export const DEFAULT_VOTING_TYPES = [
 ]
 
 export const DEFAULT_MEMBER = ['', -1]
-
 export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export function getTokenType(tokenParams) {

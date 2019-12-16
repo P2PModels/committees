@@ -214,7 +214,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         _grantTokenManagerPermissions(acl, tokenManager, manager);
         _mintTokens(tokenManager, _initialMembers, _stakes);
 
-        Voting voting = _installVotingApp(_dao, token, _votingParams[0] * PCT, _votingParams[1] * PCT, _votingParams[2] * 1 days);
+        Voting voting = _installVotingApp(_dao, token, _votingParams[0], _votingParams[1], _votingParams[2]);
         //Only token holders can open a vote.
         _createVotingPermissions(acl, voting, manager, manager);
         _changeTokenManagerPermissionManager(acl, tokenManager, manager);

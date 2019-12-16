@@ -60,14 +60,7 @@ const votingTypeField = React.memo(
           onChange={changeDropdown}
         />
         <TypeInfoDetails>
-          <Field
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            label="support"
-          >
+          <Field label="support" style={{ width: '25%' }}>
             <VotingTextInput
               min="1"
               max="99"
@@ -80,7 +73,7 @@ const votingTypeField = React.memo(
             />
             <ParamDetail>%</ParamDetail>
           </Field>
-          <Field label="acceptance">
+          <Field label="acceptance" style={{ width: '25%' }}>
             <VotingTextInput
               min="1"
               max="99"
@@ -94,7 +87,6 @@ const votingTypeField = React.memo(
           </Field>
           <Field label="duration">
             <VotingTextInput
-              style={{ width: '60%' }}
               min="1"
               max="360"
               name="duration"
@@ -112,7 +104,7 @@ const votingTypeField = React.memo(
 )
 
 const VotingTextInput = styled(TextInput)`
-  width: 80%;
+  width: 60%;
 `
 
 const TypeInfoDetails = styled.div`

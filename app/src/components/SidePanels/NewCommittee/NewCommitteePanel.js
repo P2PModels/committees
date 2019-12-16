@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
 import { utf8ToHex } from 'web3-utils'
 
@@ -8,7 +7,7 @@ import {
   Tag,
   TextInput,
   DropDown,
-  Switch,
+  Checkbox,
   GU,
   useSidePanelFocusOnReady,
   useTheme,
@@ -22,6 +21,8 @@ import MembersField from '../../Form/MembersField/MembersField'
 import {
   DEFAULT_VOTING_TYPES,
   DEFAULT_TOKEN_TYPES,
+  PCT,
+  DAYS,
   validateMembers,
   decoupleMembers,
   validateVotingParams,
@@ -38,7 +39,7 @@ const tokenTypes = DEFAULT_TOKEN_TYPES.map(type => {
       `}
     >
       {type.name + ' '}
-      {type.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
+      {type.transferable ? <Tag uppercase={false}>Transferable</Tag> : null}
       {type.unique ? <Tag uppercase={false}>Unique</Tag> : null}
     </span>
   )
@@ -67,7 +68,7 @@ const createCommittee = (
     [transferable, unique],
     addresses,
     stakes,
-    [support, acceptance, duration],
+    [String(support * PCT), String(acceptance * PCT), String(duration * DAYS)],
   ]
   if (finance) {
     api.createFinancialCommittee(...params).subscribe(closePanel)
@@ -98,9 +99,6 @@ const NewCommitteePanel = React.memo(() => {
 
     if (!name) {
       error.name = 'Please provide a name'
-    }
-    if (!description) {
-      error.description = 'Please provide a description'
     }
 
     errorMsg = validateVotingParams(support, acceptance, duration)
@@ -143,9 +141,7 @@ const NewCommitteePanel = React.memo(() => {
         }
       />
       <FormField
-        required
         label="Description"
-        err={error && error.description}
         input={
           <TextInput
             name="description"
@@ -182,7 +178,7 @@ const NewCommitteePanel = React.memo(() => {
         }
       />
       <FormField
-        label="Apps"
+        label="Finance"
         input={
           <label
             css={`
@@ -190,21 +186,17 @@ const NewCommitteePanel = React.memo(() => {
               align-items: center;
               margin-top: ${GU}px;
               color: ${theme.surfaceContent};
-              width: 100%;
             `}
           >
-            <AppField>
-              <span
-                css={`
-                  margin-left: ${0.5 * GU}px;
-                  ${textStyle('body3')}
-                  color: ${theme.content}
-                `}
-              >
-                Finance &nbsp;
-              </span>
-              <Switch checked={finance} onChange={enableFinance} />
-            </AppField>
+            <Checkbox checked={finance} onChange={enableFinance} />
+            <span
+              css={`
+                margin-left: ${0.5 * GU}px;
+                ${textStyle('label3')}
+              `}
+            >
+              Enable finance
+            </span>
           </label>
         }
       />
@@ -224,9 +216,4 @@ const NewCommitteePanel = React.memo(() => {
   )
 })
 
-const AppField = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-`
 export default NewCommitteePanel
