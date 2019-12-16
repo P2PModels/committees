@@ -59,44 +59,6 @@ export function getVotingType(votingParams) {
   return { name, support, acceptance, duration }
 }
 
-export function updateCommitteesMembers(
-  committees,
-  committeeAddress,
-  memberAddress,
-  addMembers
-) {
-  const commIndex = committees.findIndex(committee => {
-    return committee.address === committeeAddress
-  })
-
-  let resMember
-  const updatedCommittees = [...committees]
-  if (addMembers) resMember = [...committees[commIndex].members, memberAddress]
-  else
-    resMember = committees[commIndex].members.filter(member => {
-      return member !== memberAddress
-    })
-
-  const updatedCommittee = Object.keys(committees[commIndex]).reduce(
-    (committee, key) => {
-      if (key === 'members') committee[key] = resMember
-      else committee[key] = committees[commIndex][key]
-
-      return committee
-    },
-    {}
-  )
-
-  updatedCommittees[commIndex] = updatedCommittee
-  return updatedCommittees
-}
-
-export function deleteCommittee(committees, committeeAddress) {
-  return committees.filter(committee => {
-    return committee.address !== committeeAddress
-  })
-}
-
 function validateDuplicateAddresses(members, validateAddress) {
   const validAddresses = members
     .map(([address]) => address.toLowerCase())

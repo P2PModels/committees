@@ -20,8 +20,6 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     /// Events
     event CreateCommittee(address indexed committeeAddress, address indexed votingAddress, bytes32 name, string description);
     event RemoveCommittee(address indexed committeeAddress);
-    event AddMembers(address indexed committeeAddress, address[] members, uint256[] stakes);
-    event RemoveMember(address indexed committeeAddress, address member);
     event ModifyCommitteeInfo(address indexed committeeAddress, bytes32 name, string description);
 
     /// Types
@@ -48,13 +46,8 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
 
     /// Errors
     string private constant ERROR_COMMITTEE_MISSING = "COMMITTEE_NOT_ADDED";
-    string private constant ERROR_COMMITTEE_EXISTS = "COMMITTEE_ALREADY_ADDED";
     string private constant ERROR_MEMBER_MISSING = "MEMBER_DONT_EXIST";
-    string private constant ERROR_MEMBER_EXISTS = "MEMBER_ALREADY_ADDED";
     string private constant ERROR_MEMBER_STAKES_NOT_EQUAL = "MEMBER_STAKES_NOT_EQUAL";
-    string private constant ERROR_MINIME_FACTORY_NOT_CONTRACT = "MINIME_FACTORY_NOT_CONTRACT";
-    string private constant ERROR_ENS_NOT_CONTRACT = "ENS_NOT_CONTRACT";
-    string private constant ERROR_ENTITY_NOT_CONTRACT = "ENTITY_NOT_CONTRACT";
     string private constant ERROR_NOT_IMPLEMENTED_YET = "NOT_IMPLEMENTED_YET";
 
 
@@ -82,13 +75,13 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Create a new committee.
-     * @param _name The name of the committee.
-     * @param _description The description of the committee.
-     * @param _tokenSymbol Committee's token symbol.
-     * @param _tokenParams Token configuration (transferable and cumulative)
-     * @param  _initialMembers Committee's initial member addresses.
-     * @param _votingParams Voting configuration (approval percentage, quorum percentage and duration).
+     * @notice Create a new `_name` Committee
+     * @param _name The name of the committee
+     * @param _description The description of the committee
+     * @param _tokenSymbol Committee's token symbol
+     * @param _tokenParams Token configuration (transferable and/or unique)
+     * @param  _initialMembers Committee's initial member addresses
+     * @param _votingParams Voting configuration (approval percentage, quorum percentage and duration)
      */
     function createCommittee(
         bytes32 _name,
@@ -107,13 +100,13 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Create a new financial committee.
-     * @param _name The name of the committee.
-     * @param _description The description of the committee.
-     * @param _tokenSymbol Committee's token symbol.
-     * @param _tokenParams Token configuration (transferable and cumulative)
-     * @param  _initialMembers Committee's initial member addresses.
-     * @param _votingParams Voting configuration (approval percentage, quorum percentage and duration).
+     * @notice Create a new financial `_name` Committee
+     * @param _name The name of the committee
+     * @param _description The description of the committee
+     * @param _tokenSymbol Committee's token symbol
+     * @param _tokenParams Token configuration (transferable and/or unique)
+     * @param  _initialMembers Committee's initial member addresses
+     * @param _votingParams Voting configuration (approval percentage, quorum percentage and duration)
      */
     function createFinancialCommittee(
         bytes32 _name,
@@ -133,7 +126,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Modify committee name and description
+     * @notice Modify `_committee` committee name and description
      * @param _committee Committee's token manager address
      * @param _name New committee name
      * @param _description New committee description
@@ -168,7 +161,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Delete member `_member` from committee `_committee`.
+     * @notice Delete member `_member` from committee `_committee`
      * @param _committee Committee's token manager address
      * @param _member Committee's member address
      */
@@ -186,7 +179,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Delete committee.
+     * @notice Delete committee `_committee`
      * @param _committee Committee address
      * @param _members Members addreses
      */
@@ -202,7 +195,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @dev It creates a new TokenManager and Voting app for the new committee.
+     * @dev It creates a new TokenManager and Voting app for the new committee
      */
     function _installCommitteeApps(
         string _committeeTokenSymbol,
@@ -230,6 +223,9 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
         apps[1] = address(voting);
     }
 
+    /**
+     * @dev It intalls a Vault and a Finance app in the committee
+     */
     function _installFinanceApps(address _committee, address _grantee) internal {
         Kernel _dao = Kernel(kernel());
         ACL acl = ACL(_dao.acl());
