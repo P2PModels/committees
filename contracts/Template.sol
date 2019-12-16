@@ -148,7 +148,7 @@ contract Template is TemplateBase {
     }
 
     function createMembershipCommittee(CommitteeManager app) internal {
-        bool[2] memory tokenParams = [false, true];
+        bool[2] memory tokenParams = [false, true]; // membership
         address[] memory initialMembers = new address[](2);
         uint256[] memory stakes = new uint256[](2);
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
@@ -157,7 +157,7 @@ contract Template is TemplateBase {
         stakes[1] = 1;
         uint64[3] memory votingParams = [uint64(99), 99, 30];
         app.createCommittee(
-            hex"004d656d6265727368697020436f6d6d6974746565", // Membership Committee
+            hex"004d656d62657273686970", // Membership
             "This a sample description nothing important to see here",
             "MCT",
             tokenParams,
@@ -168,14 +168,14 @@ contract Template is TemplateBase {
     }
 
     function createBountiesCommittee(CommitteeManager app) internal {
-        bool[2] memory tokenParams = [false, false];
+        bool[2] memory tokenParams = [false, false]; // reputation
         address[] memory initialMembers = new address[](1);
         uint256[] memory stakes = new uint256[](1);
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
         stakes[0] = 1;
         uint64[3] memory votingParams = [uint64(50), 15, 30];
         app.createFinancialCommittee(
-            hex"00426f756e7469657320436f6d6d6974746565", // Bounties Committee
+            hex"00426f756e74696573", // Bounties
             "This a sample description nothing important to see here",
             "BCT",
             tokenParams,
@@ -186,14 +186,14 @@ contract Template is TemplateBase {
     }
 
     function createFinanceCommittee(CommitteeManager app) internal {
-        bool[2] memory tokenParams = [true, false];
+        bool[2] memory tokenParams = [true, false]; // equity
         address[] memory initialMembers = new address[](1);
         uint256[] memory stakes = new uint256[](1);
         initialMembers[0] = 0xb4124cEB3451635DAcedd11767f004d8a28c6eE7;
         stakes[0] = 1;
         uint64[3] memory votingParams = [uint64(50), 50, 30];
         app.createFinancialCommittee(
-            hex"0046696e616e636520436f6d6d6974746565", // Finance Committee
+            hex"0046696e616e6365", // Finance
             "This a sample description nothing important to see here",
             "FCT",
             tokenParams,

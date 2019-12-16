@@ -8,8 +8,6 @@ import votingAbi from './abi/Voting.json'
 
 import { hexToUtf8 } from 'web3-utils'
 
-import { deleteCommittee } from '../src/lib/committee-utils'
-
 const INITIAL_STATE = {
   committees: [],
   isSyncing: false,
@@ -30,7 +28,7 @@ api.store(async (state, { event, returnValues }) => {
   }
 
   switch (event) {
-    case 'CreateCommittee':
+    case 'CreateCommittee': {
       const {
         committeeAddress: address,
         votingAddress,
@@ -88,15 +86,29 @@ api.store(async (state, { event, returnValues }) => {
         ],
       }
       break
-    case 'RemoveCommittee':
+    }
+    case 'ModifyCommitteeInfo': {
+      const { committeeAddress: address, name, description } = returnValues
       nextState = {
         ...state,
-        committees: deleteCommittee(
-          state.committees,
-          returnValues.committeeAddress
+        committees: state.committees.map(committee =>
+          committee.address === address
+            ? { ...committee, name: hexToUtf8(name), description }
+            : committee
         ),
       }
       break
+    }
+    case 'RemoveCommittee': {
+      const { committeeAddress } = returnValues
+      nextState = {
+        ...state,
+        committees: state.committees.filter(
+          ({ address }) => address !== committeeAddress
+        ),
+      }
+      break
+    }
   }
 
   return nextState
