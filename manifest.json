@@ -1,7 +1,7 @@
 {
   "name": "Committees",
   "author": "Paulo J. Colombo",
-  "description": "A committee manager app for Aragon",
+  "description": "Delegate certain DAO operations on a subgroup of members in order to speed them up",
   "details_url": "/public/meta/details.md",
   "source_url": "https://github.com/p2pmodels/committees",
   "icons": [{

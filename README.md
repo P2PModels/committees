@@ -1,19 +1,75 @@
-# Aragon React Boilerplate
+# Committees
 
-> 🕵️ [Find more boilerplates using GitHub](https://github.com/search?q=topic:aragon-boilerplate) |
-> ✨ [Official boilerplates](https://github.com/search?q=topic:aragon-boilerplate+org:aragon)
+Committees is an Aragon application designed to delegate certain DAO operations on a subgroup of members in order to speed them up. Each committee is created by deploying a token, token manager and voting. The Committee app allows assigning an initial group members, some voting parameters (approve percentage, quorum, etc.), and some token parameters (uniqueness, transferability, etc.).
 
-React boilerplate for Aragon applications.
+#### 🐲 Project Stage: Rinkeby
 
-This boilerplate includes a fully working example app, complete with a background worker and a front-end in React (with Aragon UI). Also comes with a DAO Template which will allow for using your app to interact with other Aragon apps like the Voting app. You can read more about DAO Template [here](https://hack.aragon.org/docs/templates-intro).
+The Committees app has been published to `open.aragonpm.eth` on the Rinkeby test network. If you experience any issues or are interested in contributing please see review our open [issues](https://github.com/p2pmodels/committees/issues).
 
-## Usage
+#### 🚨 Security Review Status: pre-audit
 
-To setup use the command `create-aragon-app`:
+The code in this repository has not been audited.
+
+## How to try Committees immediately
+
+We have a [Committees demo DAO live on Rinkeby!](https://rinkeby.aragon.org/#/trycommittees/)
+
+### How to run Committees locally
+
+First make sure that you have node, npm, and the Aragon CLI installed and working. Instructions on how to set that up can be found [here](https://hack.aragon.org/docs/cli-intro.html). You'll also need to have [Metamask](https://metamask.io) or some kind of web wallet enabled to sign transactions in the browser.
+
+Git clone this repo.
 
 ```sh
-npx create-aragon-app <app-name> react
+git clone https://github.com/P2PModels/committees.git
 ```
+
+Navigate into the `committees` directory.
+
+```sh
+cd committees
+```
+
+Install npm dependencies.
+
+```sh
+npm i
+```
+
+Deploy a dao with Committees installed on your local environment.
+
+```sh
+npm run start:ipfs:template
+```
+
+If everything is working correctly, your new DAO will be deployed and your browser will open http://localhost:3000/#/YOUR-DAO-ADDRESS. It should look something like this:
+
+![newly deployed dao with Committees](https://raw.githubusercontent.com/P2PModels/committees/master/app/public/meta/screenshot-1.png)
+
+You will also see the configuration for your local deployment in the terminal. It should look something like this:
+
+```sh
+    Ethereum Node: ws://localhost:8545
+    ENS registry: 0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1
+    APM registry: aragonpm.eth
+    DAO address: YOUR-DAO-ADDRESS
+```
+
+## How to deploy Committees to an organization
+
+Committees has been published to APM on rinkeby at `committees.open.aragonpm.eth`
+
+To deploy to an organization you can use the [Aragon CLI](https://hack.aragon.org/docs/cli-intro.html).
+
+```sh
+aragon dao install <dao-address> committees.open.aragonpm.eth --app-init-args <minimetoken-factory> <ens-registry> <initial-manager>
+```
+
+In rinkeby, `minimetoken-factory` is 0xad991658443c56b3dE2D7d7f5d8C68F339aEef29 and `ens-registry` is 0x98df287b6c145399aaa709692c8d308357bc085d. In mainnet, they are 0xA29EF584c389c67178aE9152aC9C543f9156E2B3 and 0x314159265dd8dbb310642f98f50c066173c1259b, respectively.
+
+The `initial-manager` can be set to the DAO's general voting app.
+
+The Committees app must have the `APP_MANAGER_ROLE` permission on `Kernel` and the `CREATE_PERMISSIONS_ROLE` permission on the `ACL`.
 
 ## Structure
 
@@ -38,8 +94,9 @@ root
 - **app**: Frontend folder. Completely encapsulated, has its own package.json and dependencies.
   - **src**: Source files.
   - [**package.json**](https://docs.npmjs.com/creating-a-package-json-file): Frontend npm configuration file.
-- **contracts**: Smart Constracts folder.
-  - `CounterApp.sol`: Aragon app contract example.
+- **contracts**: Smart Contracts folder.
+  - `CommitteeManager.sol`: Aragon app contract.
+  - `CommitteeHelper.sol`: Helpers to install and configure Aragon apps on a DAO.
   - `Template.sol`: [Aragon Template](https://hack.aragon.org/docs/templates-intro) to deploy a fully functional DAO.
 - [**migrations**](https://truffleframework.com/docs/truffle/getting-started/running-migrations): Migrations folder.
 - **test**: Tests folder.
@@ -47,79 +104,3 @@ root
 - [**manifest.json**](https://hack.aragon.org/docs/cli-global-confg#the-manifestjson-file): Aragon configuration file. Includes web-specific configurations.
 - [**truffle.js**](https://truffleframework.com/docs/truffle/reference/configuration): Truffle configuration file.
 - [**package.json**](https://docs.npmjs.com/creating-a-package-json-file): Main npm configuration file.
-
-## Make the template work with your app
-
-- Edit the roles defined in the template to configure your DAO as you want!
-
-## Run the template
-
-```sh
-npx aragon run --template Template --template-init @ARAGON_ENS
-```
-
-## Running your app
-
-### Using HTTP
-
-Running your app using HTTP will allow for a faster development process of your app's front-end, as it can be hot-reloaded without the need to execute `aragon run` every time a change is made.
-
-- First start your app's development server running `npm run start:app`, and keep that process running. By default it will rebuild the app and reload the server when changes to the source are made.
-
-- After that, you can run `npm run start:http` or `npm run start:http:template` which will compile your app's contracts, publish the app locally and create a DAO. You will need to stop it and run it again after making changes to your smart contracts.
-
-Changes to the app's background script (`app/script.js`) cannot be hot-reloaded, after making changes to the script, you will need to either restart the development server (`npm run start:app`) or rebuild the script `npm run build:script`.
-
-### Using IPFS
-
-Running your app using IPFS will mimic the production environment that will be used for running your app. `npm run start:ipfs` will run your app using IPFS. Whenever a change is made to any file in your front-end, a new version of the app needs to be published, so the command needs to be restarted.
-
-## What's in this boilerplate?
-
-### npm Scripts
-
-- **start** or **start:ipfs**: Runs your app inside a DAO served from IPFS
-- **start:http**: Runs your app inside a DAO served with HTTP (hot reloading)
-- **start:ipfs:template**: Creates a DAO with the [Template](https://github.com/aragon/aragon-react-boilerplate/blob/master/contracts/Template.sol) and serves the app from IPFS
-- **start:http:template**: Creates a DAO with the [Template](https://github.com/aragon/aragon-react-boilerplate/blob/master/contracts/Template.sol) and serves the app with HTTP (hot reloading)
-- **prepare**: Installs dependencies of the front-end
-- **start:app**: Starts a development server for your app
-- **compile**: Compiles the smart contracts
-- **build**: Builds the front-end and background script
-- **test**: Runs tests for the contracts
-- **publish:patch**: Releases a patch version to aragonPM (only frontend/content changes allowed)
-- **publish:minor**: Releases a minor version to aragonPM (only frontend/content changes allowed)
-- **publish:major**: Releases a major version to aragonPM (frontend **and** contract changes)
-- **versions**: Checks the currently installed versions of the app
-- **lint**: Checks the app and the contracts for linting errors
-- **lint:fix**: Fixes the lint errors that can be resolved automatically
-- **coverage**: Runs the tests for the contracts and creates a report
-
-### Libraries
-
-- [**@aragon/os**](https://github.com/aragon/aragonos): Aragon interfaces
-- [**@aragon/api**](https://github.com/aragon/aragon.js/tree/master/packages/aragon-api): Wrapper for Aragon application RPC
-- [**@aragon/ui**](https://github.com/aragon/aragon-ui): Aragon UI components (in React)
-
-## What you can do with this boilerplate?
-
-### Publish
-
-You can publish you app on [aragonPM](https://hack.aragon.org/docs/apm). See how in our [publish guide](https://hack.aragon.org/docs/guides-publish).
-
-> **Note**<br>
-> The [Template](https://github.com/aragon/aragon-react-boilerplate/blob/master/contracts/Template.sol) will not be published.
-
-### Using a different Ethereum account
-
-You can use a different account to interact with you app. [Check the documentation](https://hack.aragon.org/docs/guides-faq#set-a-private-key).
-
-### Propagate content
-
-You can propagate the content of your app on IPFS. Learn more in our [troubleshooting guide](https://hack.aragon.org/docs/guides-faq#propagating-your-content-hash-through-ipfs) or use the `aragon ipfs propagate` command:
-
-```
-npx aragon ipfs propagate <cid>
-```
-
-Where `cid` is your content id hash (this will be displayed after publishing).
