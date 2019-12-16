@@ -40,11 +40,8 @@ const CommitteeInfo = ({
   const tokenType = getTokenType(tokenParams)
   const votingType = getVotingType(votingParams)
 
-  const removeMemberHandler = async (committee, member, stake) => {
-    console.log(
-      `Removing member  ${member} with stake ${stake} from ${committee}`
-    )
-    await api.removeMember(committee, member, stake).toPromise()
+  const removeMemberHandler = async (committee, member) => {
+    await api.removeMember(committee, member).toPromise()
   }
 
   return (
@@ -93,8 +90,8 @@ const CommitteeInfo = ({
               <EntryActions
                 address={account}
                 stake={stake}
-                onDeleteMember={(member, stake) => {
-                  removeMemberHandler(address, member, stake)
+                onDeleteMember={member => {
+                  removeMemberHandler(address, member)
                 }}
               />
             )}

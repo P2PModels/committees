@@ -75,7 +75,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Create a new `_name` Committee
+     * @notice Create a new `@fromHex(_name)` Committee
      * @param _name The name of the committee
      * @param _description The description of the committee
      * @param _tokenSymbol Committee's token symbol
@@ -100,7 +100,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /**
-     * @notice Create a new financial `_name` Committee
+     * @notice Create a new financial `@fromHex(_name)` Committee
      * @param _name The name of the committee
      * @param _description The description of the committee
      * @param _tokenSymbol Committee's token symbol
