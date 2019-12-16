@@ -31,6 +31,8 @@ export const DEFAULT_VOTING_TYPES = [
 
 export const DEFAULT_MEMBER = ['', -1]
 
+export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 export function getTokenType(tokenParams) {
   const [transferable, unique] = tokenParams
   const name =

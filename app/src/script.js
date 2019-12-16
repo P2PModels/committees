@@ -8,7 +8,7 @@ import votingAbi from './abi/Voting.json'
 
 import { hexToUtf8 } from 'web3-utils'
 
-import { deleteCommittee } from '../src/lib/committee-utils'
+import { DEFAULT_ADDRESS, deleteCommittee } from '../src/lib/committee-utils'
 
 const INITIAL_STATE = {
   committees: [],
@@ -60,6 +60,9 @@ api.store(async (state, { event, returnValues }) => {
         voting.minAcceptQuorumPct().toPromise(),
         voting.voteTime().toPromise(),
       ])
+      // Get Finance app
+      const finance = (await api.call('committees', address).toPromise())
+        .finance
 
       const isUnique = maxAccountTokens === '1' && decimals === '0'
       const tokenParams = [isTransferable, isUnique]
@@ -80,6 +83,7 @@ api.store(async (state, { event, returnValues }) => {
             description,
             address,
             votingAddress,
+            financeAddress: finance !== DEFAULT_ADDRESS ? finance : '',
             tokenParams,
             votingParams,
             tokenSymbol,

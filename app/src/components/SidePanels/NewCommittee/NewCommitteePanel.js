@@ -5,7 +5,6 @@ import { utf8ToHex } from 'web3-utils'
 
 import { Form, FormField } from '../../Form'
 import {
-  Text,
   Tag,
   TextInput,
   DropDown,
@@ -31,13 +30,17 @@ import { getTokenSymbol } from '../../../lib/token-utils'
 
 const DEFAULT_VOTING_PARAMS = { ...DEFAULT_VOTING_TYPES[0] }
 
-const tokenTypes = DEFAULT_TOKEN_TYPES.map(types => {
+const tokenTypes = DEFAULT_TOKEN_TYPES.map(type => {
   return (
-    <Text>
-      {types.name + ' '}
-      {types.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
-      {types.unique ? <Tag uppercase={false}>Unique</Tag> : null}
-    </Text>
+    <span
+      css={`
+        ${textStyle('body3')}
+      `}
+    >
+      {type.name + ' '}
+      {type.transferable ? <Tag uppercase={false}>No transferible</Tag> : null}
+      {type.unique ? <Tag uppercase={false}>Unique</Tag> : null}
+    </span>
   )
 })
 
@@ -175,6 +178,7 @@ const NewCommitteePanel = React.memo(() => {
             votingTypes={DEFAULT_VOTING_TYPES}
             votingParams={votingParams}
             onChange={setVotingParams}
+            textSize={textStyle('body3')}
           />
         }
       />

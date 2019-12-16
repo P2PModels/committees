@@ -28,6 +28,7 @@ const CommitteeInfo = ({
     tokenParams,
     tokenSymbol,
     tokenAddress,
+    financeAddress,
     votingParams,
     members,
   },
@@ -108,6 +109,13 @@ const CommitteeInfo = ({
               <span>:</span>
               <IdentityBadge entity={address} />
             </InfoRow>
+            {financeAddress && (
+              <InfoRow>
+                <span>Finance</span>
+                <span>:</span>
+                <IdentityBadge entity={financeAddress} />
+              </InfoRow>
+            )}
           </Box>
           <Box heading="Token Info">
             <InfoRow>

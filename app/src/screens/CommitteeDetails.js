@@ -44,14 +44,9 @@ async function getMembers(api, tmAddress) {
     ),
   ]
 
-  const filteredMembers = (
-    await Promise.all(
-      members.map(async m => [
-        m,
-        parseInt(await token.balanceOf(m).toPromise()),
-      ])
-    )
-  ).filter(m => m[1] > 0)
+  const filteredMembers = (await Promise.all(
+    members.map(async m => [m, parseInt(await token.balanceOf(m).toPromise())])
+  )).filter(m => m[1] > 0)
 
   return [filteredMembers, tokenAddress]
 }
@@ -59,7 +54,6 @@ async function getMembers(api, tmAddress) {
 const CommitteeDetails = React.memo(
   ({ committee, onBack, onChangeTab, onDeleteCommittee }) => {
     console.log('CommitteeDetails rerendering')
-
     const { api, appState } = useAragonApi()
     const { isSyncing } = appState
     const [activeTabIndex, setActiveTabIndex] = useState(0)

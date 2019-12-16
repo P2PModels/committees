@@ -9,6 +9,7 @@ import LocalAppBadge from '../../LocalIdentityBadge/LocalAppBadge'
 import { usePanelManagement } from '../../SidePanels'
 
 import { getAclHandler, getAppRoles } from '../../../lib/acl-utils'
+import { toChecksumAddress } from 'web3-utils'
 
 const INITIAL_APP_DROPDOWN_VALUE = 'Select an app'
 const INITIAL_ROLE_DROPDOWN_VALUE = 'Select role'
@@ -50,7 +51,13 @@ const NewPermissionPanel = ({ committeeApp }) => {
     console.log(
       `Committee app ${committeeApp} now has role ${action} on app ${app}`
     )
-    aclHandler.grantPermission(committeeApp, app, action).subscribe(closePanel)
+    aclHandler
+      .grantPermission(
+        toChecksumAddress(committeeApp),
+        toChecksumAddress(app),
+        action
+      )
+      .subscribe(closePanel)
   }
 
   const selectedAppHandler = async index => {

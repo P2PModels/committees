@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { useTheme, unselectable } from '@aragon/ui'
 
-const FieldTitle = ({ children }) => {
+const FieldTitle = React.memo(({ children }) => {
   console.log('Rendering FieldTitle.')
   const theme = useTheme()
 
@@ -11,7 +11,8 @@ const FieldTitle = ({ children }) => {
       {children}
     </StyledFieldTitle>
   )
-}
+})
+
 const StyledFieldTitle = styled.label`
   ${unselectable};
   color: ${props => props.theme};

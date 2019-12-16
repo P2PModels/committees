@@ -32,7 +32,7 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     }
 
     /// State
-    mapping(address => Committee) committees;
+    mapping(address => Committee) public committees;
     //Entity that manages committees apps permissions.
     address internal manager;
 
