@@ -6,7 +6,6 @@
     "@aragon/api": "^2.0.0-beta.7",
     "@aragon/api-react": "^2.0.0-beta.6",
     "@aragon/ui": "^1.0.0-alpha.26",
-    "@aragon/wrapper": "^5.0.0-rc.21",
     "core-js": "^3.1.4",
     "date-fns": "^2.8.1",
     "react": "^16.8.6",

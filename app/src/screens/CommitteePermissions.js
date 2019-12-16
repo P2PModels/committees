@@ -10,6 +10,9 @@ import {
   textStyle,
   Button,
   IconPlus,
+  Info,
+  GU,
+  Link,
   useTheme,
   useLayout,
 } from '@aragon/ui'
@@ -26,7 +29,7 @@ const emptyState = type => (
       ${textStyle('title2')}
     `}
   >
-    No {type || ''} permissions
+    No {type === 'Individual' ? 'individual' : 'group'} permissions
   </div>
 )
 
@@ -67,6 +70,22 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
 
   return (
     <React.Fragment>
+      <Info
+        mode="warning"
+        css={`
+          margin-bottom: ${2 * GU}px;
+        `}
+      >
+        See{' '}
+        <Link href="https://github.com/P2PModels/committees/issues/17">
+          Issue #17
+        </Link>
+        . At the moment, permission <b>granting</b> and permission{' '}
+        <b>removal</b> only work for <b>Externally Owned Accounts (EOA)</b> that
+        are the managers of thoose permissions. If the permission manager is set
+        to a <b>Token Manager</b> or a <b>Voting app</b>, you have to
+        grant/revoke it using the native permissions app.
+      </Info>
       <PermissionsTable
         type="Individual"
         permissions={tokenPermissions}

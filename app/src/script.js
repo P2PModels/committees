@@ -5,6 +5,7 @@ import Aragon, { events } from '@aragon/api'
 import tmAbi from './abi/TokenManager.json'
 import tokenAbi from './abi/minimeToken.json'
 import votingAbi from './abi/Voting.json'
+import financeAbi from './abi/Finance.json'
 
 import { hexToUtf8 } from 'web3-utils'
 
@@ -59,9 +60,15 @@ api.store(async (state, { event, returnValues }) => {
         voting.minAcceptQuorumPct().toPromise(),
         voting.voteTime().toPromise(),
       ])
-      // Get Finance app
+      // Get finance info
       const finance = (await api.call('committees', address).toPromise())
         .finance
+      const vaultAddress =
+        finance !== DEFAULT_ADDRESS &&
+        (await api
+          .external(finance, financeAbi)
+          .vault()
+          .toPromise())
 
       const isUnique = maxAccountTokens === '1' && decimals === '0'
       const tokenParams = [isTransferable, isUnique]
@@ -83,6 +90,7 @@ api.store(async (state, { event, returnValues }) => {
             address,
             votingAddress,
             financeAddress: finance !== DEFAULT_ADDRESS ? finance : '',
+            vaultAddress,
             tokenParams,
             votingParams,
             tokenSymbol,

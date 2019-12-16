@@ -21,6 +21,8 @@ import {
   GU,
 } from '@aragon/ui'
 
+import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
+
 const CommitteeInfo = ({
   committee: {
     description,
@@ -28,7 +30,9 @@ const CommitteeInfo = ({
     tokenParams,
     tokenSymbol,
     tokenAddress,
+    votingAddress,
     financeAddress,
+    vaultAddress,
     votingParams,
     members,
   },
@@ -100,18 +104,22 @@ const CommitteeInfo = ({
       }
       secondary={
         <React.Fragment>
-          <Box heading="General Info">
+          <Box heading="Committee Apps">
             <InfoRow>
-              <span>Committee</span>
-              <span>:</span>
-              <IdentityBadge entity={address} />
+              <LocalAppBadge appAddress={address} />
+            </InfoRow>
+            <InfoRow>
+              <LocalAppBadge appAddress={votingAddress} />
             </InfoRow>
             {financeAddress && (
-              <InfoRow>
-                <span>Finance</span>
-                <span>:</span>
-                <IdentityBadge entity={financeAddress} />
-              </InfoRow>
+              <>
+                <InfoRow>
+                  <LocalAppBadge appAddress={financeAddress} />
+                </InfoRow>
+                <InfoRow>
+                  <LocalAppBadge appAddress={vaultAddress} />
+                </InfoRow>
+              </>
             )}
           </Box>
           <Box heading="Token Info">

@@ -52,9 +52,11 @@ async function getTransactionsFromLogs(api, apps, logs) {
     ...new Set(logs.map(({ transactionHash }) => transactionHash)),
   ]
   // Get transaction objects and filter by transactions that belong to apps
-  const txs = (await Promise.all(
-    txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
-  )).filter(({ to }) => apps.includes(toChecksumAddress(to)))
+  const txs = (
+    await Promise.all(
+      txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
+    )
+  ).filter(({ to }) => apps.includes(toChecksumAddress(to)))
   return txs
 }
 
@@ -148,7 +150,7 @@ async function getActivities(apps, api) {
   return applyTimestamps(api, activities)
 }
 
-function ActivityLog({ heading, activities, isSyncing }) {
+function ActivityLog({ heading, isIndividual, activities, isSyncing }) {
   return (
     <DataView
       heading={heading}
@@ -196,7 +198,11 @@ function ActivityLog({ heading, activities, isSyncing }) {
         entities.length > 1 &&
         entities.map(supporter => <LocalIdentityBadge entity={supporter} />)
       }
-      statusEmpty={<div css={textStyle('title3')}>No activities yet.</div>}
+      statusEmpty={
+        <div css={textStyle('title3')}>
+          No {isIndividual ? 'solo' : 'group'} activities yet
+        </div>
+      }
     />
   )
 }
