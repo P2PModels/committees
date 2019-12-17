@@ -1,33 +1,28 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import CommitteeCard from '../components/Cards/CommitteeCard'
+import { CardLayout, GU, useLayout } from '@aragon/ui'
 
 const Committees = ({ committees, onClickCommittee }) => {
+  const { layoutName } = useLayout()
+  const compactMode = layoutName === 'small'
+  const rowHeight = compactMode ? null : 294
   return (
-    <React.Fragment>
-      <StyledCommittees>
-        {committees &&
-          committees.map(c => {
-            return (
-              <CommitteeCard
-                key={c.address}
-                committee={c}
-                onClickCommittee={onClickCommittee}
-              />
-            )
-          })}
-      </StyledCommittees>
-    </React.Fragment>
+    <CardLayout columnWidthMin={30 * GU} rowHeight={rowHeight}>
+      {committees &&
+        committees.map(c => {
+          return (
+            <CommitteeCard
+              key={c.address}
+              committee={c}
+              onClickCommittee={onClickCommittee}
+            />
+          )
+        })}
+    </CardLayout>
   )
 }
 
-const StyledCommittees = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-`
 Committees.propTypes = {
   committees: PropTypes.array,
   onClickCommittee: PropTypes.func,

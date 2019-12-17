@@ -39,13 +39,6 @@ const StyledCard = styled(Card)`
   cursor: pointer;
   border-radius: 10px 10px 10px 10px;
   margin: 3%;
-  transition: transform 0.5s;
-
-  &:hover,
-  &:focus,
-  &:active {
-    transform: scale(1.1);
-  }
 `
 
 CommitteeCard.propTypes = {
