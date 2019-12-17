@@ -1,13 +1,30 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Button, Text, theme } from '@aragon/ui'
+import { Button, useTheme, textStyle } from '@aragon/ui'
 
 const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
-  console.log('Rendering Form.')
+  const theme = useTheme()
   return (
     <React.Fragment>
-      {heading && <Text size="xxlarge">{heading}</Text>}
-      {subHeading && <Text color={theme.textTertiary}>{subHeading}</Text>}
+      {heading && (
+        <span
+          css={`
+            ${textStyle('body1')}
+          `}
+        >
+          {heading}
+        </span>
+      )}
+      {subHeading && (
+        <span
+          css={`
+            color: ${theme.textTertiary};
+            ${textStyle('body1')};
+          `}
+        >
+          {subHeading}
+        </span>
+      )}
       <div style={{ height: '1rem' }} />
       {children}
       <Button

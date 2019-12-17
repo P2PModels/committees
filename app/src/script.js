@@ -18,7 +18,6 @@ const INITIAL_STATE = {
 const api = new Aragon()
 
 api.store(async (state, { event, returnValues }) => {
-  console.log(state, event, returnValues)
   let nextState = { ...state }
 
   if (state == null) nextState = INITIAL_STATE

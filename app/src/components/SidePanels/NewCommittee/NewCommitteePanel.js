@@ -77,7 +77,6 @@ const createCommittee = (
 }
 
 const NewCommitteePanel = React.memo(() => {
-  console.log('Rendering New Committee Panel...')
   const { api } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()

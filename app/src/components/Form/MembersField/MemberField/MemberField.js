@@ -24,7 +24,6 @@ const MemberField = React.forwardRef(
     { index, member, hideRemoveButton, onUpdate, onRemove, displayStake },
     ref
   ) => {
-    console.log('Rendering MemberField.')
     const fieldsLayout = useFieldsLayout()
 
     const [account, stake] = member

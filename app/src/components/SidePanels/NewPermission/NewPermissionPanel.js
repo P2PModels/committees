@@ -48,9 +48,6 @@ const NewPermissionPanel = ({ committeeApp }) => {
 
   const createPermission = async (committeeApp, app, action) => {
     const aclHandler = await getAclHandler(api)
-    console.log(
-      `Committee app ${committeeApp} now has role ${action} on app ${app}`
-    )
     aclHandler
       .grantPermission(
         toChecksumAddress(committeeApp),

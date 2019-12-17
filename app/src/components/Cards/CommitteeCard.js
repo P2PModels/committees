@@ -2,11 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { Card, EthIdenticon, Text, Badge } from '@aragon/ui'
+import { Card, EthIdenticon, Tag, textStyle } from '@aragon/ui'
 
-const CommitteeCard = ({ committee, onClickCommittee }) => {
-  console.log('Rendering CommitteeCard')
-
+const CommitteeCard = React.memo(({ committee, onClickCommittee }) => {
   const { address, name, tokenSymbol } = committee
   return (
     <StyledCard
@@ -17,20 +15,20 @@ const CommitteeCard = ({ committee, onClickCommittee }) => {
       }}
     >
       <EthIdenticon address={address} scale={2.5} radius={20} />
-      <CardTitle size="xxlarge" smallcaps>
-        {name}
-      </CardTitle>
+      <CardTitle>{name}</CardTitle>
       <TokenSymbol>{tokenSymbol}</TokenSymbol>
     </StyledCard>
   )
-}
+})
 
-const CardTitle = styled(Text)`
+const CardTitle = styled.span`
+  ${textStyle('body1')}
+  text-transform: uppercase;
   display: block;
   margintop: -9%;
 `
 
-const TokenSymbol = styled(Badge)`
+const TokenSymbol = styled(Tag)`
   font-size: 120%;
 `
 const StyledCard = styled(Card)`

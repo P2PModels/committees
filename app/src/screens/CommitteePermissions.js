@@ -21,13 +21,13 @@ import { getRoles, getPermissions, getAclHandler } from '../lib/acl-utils'
 
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 
-const emptyState = individual => (
+const emptyState = type => (
   <div
     css={`
       ${textStyle('title2')}
     `}
   >
-    No {individual ? 'individual' : 'group'} permissions
+    No {type ? type.toLowerCase() : ''} permissions
   </div>
 )
 
@@ -106,7 +106,7 @@ const PermissionsTable = ({
       />
     }
     status={permissions ? 'default' : 'loading'}
-    statusEmpty={emptyState(true)}
+    statusEmpty={emptyState(type)}
     fields={['role', 'on app', '']}
     entries={permissions || []}
     renderEntry={({ app, role }) => [

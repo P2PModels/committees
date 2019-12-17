@@ -115,16 +115,18 @@ const CommitteeInfo = ({
             )}
           </Box>
           <Box heading="Token Info">
-            <InfoRow>
-              <span>Token</span>
-              <span>:</span>
-              <TokenBadge
-                address={tokenAddress}
-                name={tokenName}
-                symbol={tokenSymbol}
-                networkType={network && network.type}
-              />
-            </InfoRow>
+            {tokenAddress && (
+              <InfoRow>
+                <span>Token</span>
+                <span>:</span>
+                <TokenBadge
+                  address={tokenAddress}
+                  name={tokenName}
+                  symbol={tokenSymbol}
+                  networkType={network && network.type}
+                />
+              </InfoRow>
+            )}
             <InfoRow>
               <span>Type</span>
               <span>:</span>

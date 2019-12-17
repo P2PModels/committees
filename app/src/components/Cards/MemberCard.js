@@ -4,8 +4,7 @@ import styled from 'styled-components'
 
 import { Card, Button, EthIdenticon, IdentityBadge } from '@aragon/ui'
 
-const MemberCard = ({ address, onRemove }) => {
-  console.log('Rendering MemberCard.')
+const MemberCard = React.memo(({ address, onRemove }) => {
   return (
     <StyledCard width="200px" height="200px">
       <CardHeader>
@@ -23,7 +22,7 @@ const MemberCard = ({ address, onRemove }) => {
       </CardFooter>
     </StyledCard>
   )
-}
+})
 
 const StyledCard = styled(Card)`
   position: 'relative',

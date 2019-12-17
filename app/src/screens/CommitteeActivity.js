@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { useAragonApi } from '@aragon/api-react'
-import { DataView, Text, useTheme, textStyle } from '@aragon/ui'
+import { DataView, useTheme, textStyle } from '@aragon/ui'
 import LocalIdentityBadge from '../components/LocalIdentityBadge/LocalIdentityBadge'
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 import AnnotatedDescription from '../components/AnnotatedDescription'
@@ -52,11 +52,9 @@ async function getTransactionsFromLogs(api, apps, logs) {
     ...new Set(logs.map(({ transactionHash }) => transactionHash)),
   ]
   // Get transaction objects and filter by transactions that belong to apps
-  const txs = (
-    await Promise.all(
-      txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
-    )
-  ).filter(({ to }) => apps.includes(toChecksumAddress(to)))
+  const txs = (await Promise.all(
+    txHashes.map(txHash => api.web3Eth('getTransaction', txHash).toPromise())
+  )).filter(({ to }) => apps.includes(toChecksumAddress(to)))
   return txs
 }
 
@@ -150,7 +148,7 @@ async function getActivities(apps, api) {
   return applyTimestamps(api, activities)
 }
 
-function ActivityLog({ heading, activities }) {
+function ActivityLog({ heading, activities, isSyncing }) {
   return (
     <DataView
       heading={heading}
@@ -160,7 +158,8 @@ function ActivityLog({ heading, activities }) {
         { label: 'On App' },
         { label: 'Executed on' },
       ]}
-      entries={activities}
+      status={activities ? 'default' : 'loading'}
+      entries={activities || []}
       renderEntry={({
         app,
         description,
@@ -173,7 +172,7 @@ function ActivityLog({ heading, activities }) {
         ) : (
           <LocalIdentityBadge entity={entities[0]} />
         ),
-        <Text
+        <span
           css={`
             word-break: break-word;
           `}
@@ -182,16 +181,16 @@ function ActivityLog({ heading, activities }) {
             description={description}
             annotatedDescription={annotatedDescription}
           />
-        </Text>,
-        <LocalAppBadge app={app.appAddress} />,
-        <Text
+        </span>,
+        <LocalAppBadge appAddress={app} />,
+        <span
           title={formatDate(timestamp)}
           css={`
             white-space: nowrap;
           `}
         >
           {formatShortDate(timestamp)}
-        </Text>,
+        </span>,
       ]}
       renderEntryExpansion={({ entities = [] }) =>
         entities.length > 1 &&
@@ -206,12 +205,14 @@ function CommitteeActivity({ committee }) {
   const { api, appState } = useAragonApi()
   const { isSyncing } = appState
   const theme = useTheme()
-  const [activities, setActivities] = useState([])
+  const [activities, setActivities] = useState(null)
   const { address: tm, votingAddress: voting } = committee
-  const tokenActivities = activities.filter(({ forwarder }) => forwarder === tm)
-  const votingActivities = activities.filter(
-    ({ forwarder }) => forwarder === voting
-  )
+  const tokenActivities = activities
+    ? activities.filter(({ forwarder }) => forwarder === tm)
+    : null
+  const votingActivities = activities
+    ? activities.filter(({ forwarder }) => forwarder === voting)
+    : null
 
   useEffect(() => {
     api && getActivities([tm, voting], api).then(setActivities)
@@ -231,6 +232,7 @@ function CommitteeActivity({ committee }) {
             Individual activities
           </span>
         }
+        isSyncing={isSyncing}
       />
       <ActivityLog
         activities={votingActivities}
@@ -255,6 +257,7 @@ function CommitteeActivity({ committee }) {
             </span>
           </>
         }
+        isSyncing={isSyncing}
       />
     </>
   )

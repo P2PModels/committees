@@ -53,7 +53,6 @@ async function getMembers(api, tmAddress) {
 
 const CommitteeDetails = React.memo(
   ({ committee, onBack, onChangeTab, onDeleteCommittee }) => {
-    console.log('CommitteeDetails rerendering')
     const { api, appState } = useAragonApi()
     const { isSyncing } = appState
     const [activeTabIndex, setActiveTabIndex] = useState(0)

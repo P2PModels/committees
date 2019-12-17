@@ -13,9 +13,8 @@ function useFieldsLayout() {
   `
 }
 
-const MembersField = React.forwardRef(
-  ({ members, onChange, accountStake }, ref) => {
-    console.log('Rendering MembersField.')
+const MembersField = React.memo(
+  React.forwardRef(({ members, onChange, accountStake }, ref) => {
     const [focusLastMemberNext, setFocusLastMemberNext] = useState(false)
 
     const membersRef = useRef()
@@ -109,7 +108,7 @@ const MembersField = React.forwardRef(
         />
       </Field>
     )
-  }
+  })
 )
 
 const InnerLabel = styled.div`

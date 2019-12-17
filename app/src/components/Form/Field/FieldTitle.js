@@ -1,14 +1,32 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useTheme, unselectable } from '@aragon/ui'
+import { useTheme, unselectable, textStyle } from '@aragon/ui'
 
-const FieldTitle = React.memo(({ children }) => {
-  console.log('Rendering FieldTitle.')
+const FieldTitle = React.memo(({ label, required }) => {
   const theme = useTheme()
 
   return (
     <StyledFieldTitle theme={theme.contentSecondary}>
-      {children}
+      {label && (
+        <span
+          css={`
+            ${textStyle('body2')};
+          `}
+        >
+          {label}
+        </span>
+      )}
+      {required && (
+        <span
+          css={`
+            ${textStyle('body3')};
+            color: ${theme.accent};
+            margin-left: 5px;
+          `}
+        >
+          *
+        </span>
+      )}
     </StyledFieldTitle>
   )
 })
