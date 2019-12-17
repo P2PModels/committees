@@ -4,7 +4,6 @@ import { useAragonApi } from '@aragon/api-react'
 import PropTypes from 'prop-types'
 
 import {
-  ButtonIcon,
   DataView,
   Tag,
   IconTrash,
@@ -27,7 +26,7 @@ const emptyState = type => (
       ${textStyle('title2')}
     `}
   >
-    No {type ? type.toLowerCase() : ''} permissions
+    No {type || ''} permissions
   </div>
 )
 
@@ -125,16 +124,15 @@ const PermissionsTable = ({
 const EntryActions = ({ onRevokePermission }) => {
   const theme = useTheme()
   return (
-    <ButtonIcon
+    <Button
       label="Revoke permission"
-      mode="button"
+      display="icon"
       onClick={onRevokePermission}
+      icon={<IconTrash />}
       css={`
         color: ${theme.negative};
       `}
-    >
-      <IconTrash />
-    </ButtonIcon>
+    />
   )
 }
 
