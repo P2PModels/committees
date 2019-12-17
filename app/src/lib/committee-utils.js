@@ -113,7 +113,7 @@ export function validateVotingParams(support, acceptance, duration) {
       acceptance >= 100
     ) {
       votingErrors.push(
-        'Acceptance must be greater than 1 and less than support value'
+        'Acceptance must be greater than 1 and not greater than support value'
       )
     }
 
