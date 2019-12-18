@@ -38,6 +38,12 @@
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
+    "staging": {
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+      "appName": "committees.open.aragonpm.eth",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
+      "network": "rinkeby"
+    },
     "mainnet": {
       "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
       "appName": "committees.open.aragonpm.eth",

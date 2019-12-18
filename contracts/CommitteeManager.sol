@@ -45,10 +45,10 @@ contract CommitteeManager is AragonApp, CommitteeHelper {
     bytes32 constant public MANAGE_MEMBERS_ROLE = keccak256("MANAGE_MEMBERS_ROLE");
 
     /// Errors
-    string private constant ERROR_COMMITTEE_MISSING = "COMMITTEE_NOT_ADDED";
-    string private constant ERROR_MEMBER_MISSING = "MEMBER_DONT_EXIST";
-    string private constant ERROR_MEMBER_STAKES_NOT_EQUAL = "MEMBER_STAKES_NOT_EQUAL";
-    string private constant ERROR_NOT_IMPLEMENTED_YET = "NOT_IMPLEMENTED_YET";
+    string private constant ERROR_COMMITTEE_MISSING = "COMMITTEES_COMMITTEE_NOT_ADDED";
+    string private constant ERROR_MEMBER_MISSING = "COMMITTEES_MEMBER_DONT_EXIST";
+    string private constant ERROR_MEMBER_STAKES_NOT_EQUAL = "COMMITTEES_MEMBER_STAKES_NOT_EQUAL";
+    string private constant ERROR_NOT_IMPLEMENTED_YET = "COMMITTEES_NOT_IMPLEMENTED_YET";
 
 
     modifier committeeExists(address _committee) {
