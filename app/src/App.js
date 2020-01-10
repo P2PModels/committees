@@ -23,14 +23,14 @@ import Committees from './screens/Committees'
 import CommitteeDetails from './screens/CommitteeDetails'
 
 const COMMITTEE_ID_PATH_RE = /^\/committee\/(0x[a-fA-F0-9]{40})\/?$/
-const NO_COMMITTEE_ID = '-1'
+const NO_COMMITTEE_ADDRESS = null
 
 const idFromPath = path => {
   if (!path) {
-    return NO_COMMITTEE_ID
+    return NO_COMMITTEE_ADDRESS
   }
   const matches = path.match(COMMITTEE_ID_PATH_RE)
-  return matches ? matches[1] : NO_COMMITTEE_ID
+  return matches ? matches[1] : NO_COMMITTEE_ADDRESS
 }
 
 export const useSelectedCommittee = committees => {
@@ -44,7 +44,7 @@ export const useSelectedCommittee = committees => {
 
     // The `isSyncing` check prevents a proposal to be
     // selected until the app state is fully ready.
-    if (isSyncing || id === NO_COMMITTEE_ID) {
+    if (isSyncing || id === NO_COMMITTEE_ADDRESS) {
       return null
     }
 
@@ -54,7 +54,7 @@ export const useSelectedCommittee = committees => {
   const selectCommittee = useCallback(
     committee => {
       requestPath(
-        String(committee.address) === NO_COMMITTEE_ID
+        committee === NO_COMMITTEE_ADDRESS
           ? ''
           : `/committee/${committee.address}/`
       )
@@ -71,9 +71,7 @@ const App = () => {
   const { appState } = useAragonApi()
 
   const { committees } = appState
-  const [selectedCommittee, setSelectedCommittee] = useSelectedCommittee(
-    committees
-  )
+  const [selectedCommittee, selectCommittee] = useSelectedCommittee(committees)
 
   const [screenName, setScreenName] = useState('committees')
   const [panel, setPanel] = useState(null)
@@ -127,12 +125,12 @@ const App = () => {
   }
 
   const clickCommitteeHandler = committee => {
-    setSelectedCommittee(committee)
+    selectCommittee(committee)
     setScreenName('info')
   }
 
   const backHandler = () => {
-    setSelectedCommittee(null)
+    selectCommittee(null)
     setScreenName('committees')
   }
 
@@ -186,7 +184,7 @@ const App = () => {
                 committee={selectedCommittee}
                 onBack={backHandler}
                 onChangeTab={changeTabHandler}
-                onDeleteCommittee={() => setSelectedCommittee(null)}
+                onDeleteCommittee={() => selectCommittee(null)}
               />
             ) : (
               <Committees
