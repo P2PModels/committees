@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import styled from 'styled-components'
-import { useAragonApi, usePath, useAppState } from '@aragon/api-react'
+import { useAragonApi, usePath, useGuiStyle } from '@aragon/api-react'
 import {
   Main,
   Button,
@@ -211,8 +211,9 @@ const NoCommitteesLayout = styled.div`
   justify-content: center;
 `
 export default () => {
+  const { appearance } = useGuiStyle()
   return (
-    <Main>
+    <Main theme={appearance} assetsUrl="./aragon-ui">
       <App />
     </Main>
   )
