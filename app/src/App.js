@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import styled from 'styled-components'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi, usePath, useAppState } from '@aragon/api-react'
 import {
   Main,
   Button,
@@ -22,14 +22,59 @@ import NoCommittees from './screens/NoCommittees'
 import Committees from './screens/Committees'
 import CommitteeDetails from './screens/CommitteeDetails'
 
-function App() {
+const COMMITTEE_ID_PATH_RE = /^\/committee\/(0x[a-fA-F0-9]{40})\/?$/
+const NO_COMMITTEE_ID = '-1'
+
+const idFromPath = path => {
+  if (!path) {
+    return NO_COMMITTEE_ID
+  }
+  const matches = path.match(COMMITTEE_ID_PATH_RE)
+  return matches ? matches[1] : NO_COMMITTEE_ID
+}
+
+export const useSelectedCommittee = committees => {
+  const [path, requestPath] = usePath()
+  const { appState } = useAragonApi()
+
+  const { isSyncing } = appState
+  // The memoized proposal currently selected.
+  const selectedCommittee = useMemo(() => {
+    const id = idFromPath(path)
+
+    // The `isSyncing` check prevents a proposal to be
+    // selected until the app state is fully ready.
+    if (isSyncing || id === NO_COMMITTEE_ID) {
+      return null
+    }
+
+    return committees.find(committee => committee.address === id) || null
+  }, [path, isSyncing, committees])
+
+  const selectCommittee = useCallback(
+    committee => {
+      requestPath(
+        String(committee.address) === NO_COMMITTEE_ID
+          ? ''
+          : `/committee/${committee.address}/`
+      )
+    },
+    [requestPath]
+  )
+
+  return [selectedCommittee, selectCommittee]
+}
+
+const App = () => {
   const theme = useTheme()
   const { layoutName } = useLayout()
   const { appState } = useAragonApi()
 
   const { committees } = appState
+  const [selectedCommittee, setSelectedCommittee] = useSelectedCommittee(
+    committees
+  )
 
-  const [selectedCommittee, setSelectedCommittee] = useState(null)
   const [screenName, setScreenName] = useState('committees')
   const [panel, setPanel] = useState(null)
   const [panelProps, setPanelProps] = useState(null)
