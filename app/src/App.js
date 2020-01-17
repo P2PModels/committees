@@ -170,8 +170,9 @@ const NoCommitteesLayout = styled.div`
   justify-content: center;
 `
 export default () => {
+  const { appearance } = useGuiStyle()
   return (
-    <Main>
+    <Main theme={appearance} assetsUrl="./aragon-ui">
       <App />
     </Main>
   )
