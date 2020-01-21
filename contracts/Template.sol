@@ -90,7 +90,7 @@ contract Template is TemplateBase {
         // Initialize apps
         vault.initialize();
         finance.initialize(vault, DEFAULT_FINANCE_PERIOD);
-        app.initialize(tokenFactory, ens, voting);
+        app.initialize(tokenFactory, ens, address(voting));
 
         tokenManager.initialize(token, true, 0);
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
