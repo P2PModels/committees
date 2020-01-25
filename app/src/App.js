@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi, useGuiStyle } from '@aragon/api-react'
 import {
   Main,
   Button,
@@ -28,13 +28,8 @@ const App = () => {
   const theme = useTheme()
   const { layoutName } = useLayout()
   const { appState } = useAragonApi()
-
-<<<<<<< HEAD
   const { committees, isSyncing } = appState
-=======
-  const { committees } = appState
   const [selectedCommittee, selectCommittee] = useSelectedCommittee(committees)
->>>>>>> 1b5bf9686a76ed84ff3ff555fc399dc2cdea27a8
 
   const [screenName, setScreenName] = useState('committees')
   const [panel, setPanel] = useState(null)
