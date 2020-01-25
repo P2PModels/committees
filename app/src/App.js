@@ -27,7 +27,7 @@ function App() {
   const { layoutName } = useLayout()
   const { appState } = useAragonApi()
 
-  const { committees } = appState
+  const { committees, isSyncing } = appState
 
   const [selectedCommittee, setSelectedCommittee] = useState(null)
   const [screenName, setScreenName] = useState('committees')
@@ -101,7 +101,7 @@ function App() {
         <BaseStyles />
         {committees && committees.length === 0 && (
           <NoCommitteesLayout>
-            <NoCommittees isSyncing={false}>
+            <NoCommittees isSyncing={isSyncing}>
               <ScreenAction />
             </NoCommittees>
           </NoCommitteesLayout>
