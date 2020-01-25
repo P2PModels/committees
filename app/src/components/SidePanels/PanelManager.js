@@ -19,27 +19,29 @@ export const PanelContext = createContext({
   setPanelProps: () => {},
 })
 
-export const PanelManager = ({
-  activePanel = null,
-  onClose,
-  ...panelProps
-}) => {
-  const panelTitle = panelProps.title
-    ? panelProps.title
-    : activePanel && 'Side Panel'
-  const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
-  return (
-    <SidePanel
-      title={panelTitle || ''}
-      opened={!!activePanel}
-      onClose={onClose}
-    >
-      <Suspense fallback={<div>Loading Panel...</div>}>
-        {PanelComponent && <PanelComponent {...panelProps} />}
-      </Suspense>
-    </SidePanel>
-  )
-}
+export const PanelManager = React.memo(
+  ({ activePanel = null, onClose, ...panelProps }) => {
+    const panelTitle = panelProps.title
+      ? panelProps.title
+      : activePanel && 'Side Panel'
+
+    const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
+    return (
+      <SidePanel
+        title={panelTitle || ''}
+        opened={!!activePanel}
+        onClose={onClose}
+      >
+        <Suspense fallback={<div>Loading Panel...</div>}>
+          {PanelComponent && <PanelComponent {...panelProps} />}
+        </Suspense>
+      </SidePanel>
+    )
+  },
+  (prevProps, nextProps) => {
+    return prevProps.activePanel === nextProps.activePanel
+  }
+)
 
 PanelManager.propTypes = {
   activePanel: PropTypes.string,
