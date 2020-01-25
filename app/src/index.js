@@ -6,7 +6,7 @@ import { IdentityProvider } from './identity-manager'
 
 const reducer = state => {
   if (state === null) {
-    return { syncing: true }
+    return { committees: [], syncing: true }
   }
   return state
 }

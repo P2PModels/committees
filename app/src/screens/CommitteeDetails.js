@@ -13,6 +13,8 @@ import { map } from 'rxjs/operators'
 import tmAbi from '../abi/TokenManager.json'
 import tokenAbi from '../abi/minimeToken.json'
 
+import useSelectedCommittee from '../hooks/useSelectedCommitee'
+
 const tabs = [
   { name: 'Info', body: 'CommitteeInfo' },
   { name: 'Permissions', body: 'CommitteePermissions' },
@@ -60,9 +62,13 @@ const CommitteeDetails = React.memo(
   ({ committee, onBack, onChangeTab, onDeleteCommittee }) => {
     const { api, appState } = useAragonApi()
     const { isSyncing } = appState
-    const [activeTabIndex, setActiveTabIndex] = useState(0)
     const [members, setMembers] = useState(null)
     const [tokenAddress, setTokenAddress] = useState('')
+
+    const [, selectCommittee, selectedTab] = useSelectedCommittee([])
+
+    const currentTab =
+      tabs.find(t => t.name.toLowerCase() === selectedTab) || {}
 
     useEffect(() => {
       api &&
@@ -74,8 +80,9 @@ const CommitteeDetails = React.memo(
 
     const tabChangeHandler = useCallback(
       index => {
+        const tabName = tabs[index].name
+        selectCommittee(committee, tabName)
         onChangeTab(tabs[index].name)
-        setActiveTabIndex(index)
       },
       [tabs]
     )
@@ -106,10 +113,10 @@ const CommitteeDetails = React.memo(
         <Bar primary={<BackButton onClick={onBack} />} />
         <Tabs
           items={tabs.map(t => t.name)}
-          selected={activeTabIndex}
+          selected={tabs.indexOf(currentTab)}
           onChange={tabChangeHandler}
         />
-        <ScreenTab screenName={tabs[activeTabIndex].name} />
+        <ScreenTab screenName={currentTab.name} />
       </React.Fragment>
     )
   },

@@ -22,14 +22,15 @@ import NoCommittees from './screens/NoCommittees'
 import Committees from './screens/Committees'
 import CommitteeDetails from './screens/CommitteeDetails'
 
-function App() {
+import useSelectedCommittee from './hooks/useSelectedCommitee'
+
+const App = () => {
   const theme = useTheme()
   const { layoutName } = useLayout()
   const { appState } = useAragonApi()
+  const { committees, isSyncing } = appState
+  const [selectedCommittee, selectCommittee] = useSelectedCommittee(committees)
 
-  const { committees } = appState
-
-  const [selectedCommittee, setSelectedCommittee] = useState(null)
   const [screenName, setScreenName] = useState('committees')
   const [panel, setPanel] = useState(null)
   const [panelProps, setPanelProps] = useState(null)
@@ -82,12 +83,12 @@ function App() {
   }
 
   const clickCommitteeHandler = committee => {
-    setSelectedCommittee(committee)
+    selectCommittee(committee)
     setScreenName('info')
   }
 
   const backHandler = () => {
-    setSelectedCommittee(null)
+    selectCommittee(null)
     setScreenName('committees')
   }
 
@@ -101,7 +102,7 @@ function App() {
         <BaseStyles />
         {committees && committees.length === 0 && (
           <NoCommitteesLayout>
-            <NoCommittees isSyncing={false}>
+            <NoCommittees isSyncing={isSyncing}>
               <ScreenAction />
             </NoCommittees>
           </NoCommitteesLayout>
@@ -141,7 +142,7 @@ function App() {
                 committee={selectedCommittee}
                 onBack={backHandler}
                 onChangeTab={changeTabHandler}
-                onDeleteCommittee={() => setSelectedCommittee(null)}
+                onDeleteCommittee={() => selectCommittee(null)}
               />
             ) : (
               <Committees
