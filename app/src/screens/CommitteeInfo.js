@@ -1,15 +1,21 @@
 import React, { useCallback } from 'react'
-import { useAragonApi, useNetwork } from '@aragon/api-react'
+import {
+  useAragonApi,
+  useNetwork,
+  useConnectedAccount,
+} from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { getTokenName } from '../lib/token-utils'
 
 import { getTokenType, getVotingType } from '../lib/committee-utils'
+
+import { addressesEqual } from '../lib/web3-utils'
+
 import {
   Split,
   Box,
-  IdentityBadge,
   textStyle,
   TokenBadge,
   DataView,
@@ -19,9 +25,12 @@ import {
   IconRemove,
   useTheme,
   GU,
+  useLayout,
 } from '@aragon/ui'
 
+import LocalIdentityBadge from '../components/LocalIdentityBadge/LocalIdentityBadge'
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
+import You from '../components/LocalIdentityBadge/You'
 
 const CommitteeInfo = ({
   committee: {
@@ -40,9 +49,12 @@ const CommitteeInfo = ({
   const { api } = useAragonApi()
   const theme = useTheme()
   const network = useNetwork()
+  const connectedAccount = useConnectedAccount()
   const tokenName = getTokenName(tokenSymbol)
   const tokenType = getTokenType(tokenParams)
   const votingType = getVotingType(votingParams)
+  const { layoutName } = useLayout()
+  const compact = layoutName === 'small'
 
   const removeMemberHandler = async (committee, member) => {
     await api.removeMember(committee, member).toPromise()
@@ -88,7 +100,23 @@ const CommitteeInfo = ({
               []
             }
             renderEntry={({ account }) => {
-              return [<IdentityBadge entity={account} />]
+              const isCurrentUser = addressesEqual(account, connectedAccount)
+              console.log(isCurrentUser)
+              return [
+                <div
+                  css={`
+                    display: flex;
+                    align-items: center;
+                    max-width: ${compact ? '50vw' : 'unset'};
+                  `}
+                >
+                  <LocalIdentityBadge
+                    entity={account}
+                    connectedAccount={isCurrentUser}
+                  />
+                  {isCurrentUser && <You />}
+                </div>,
+              ]
             }}
             renderEntryActions={({ account, stake }) => (
               <EntryActions
