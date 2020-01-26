@@ -1,17 +1,12 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { useAragonApi } from '@aragon/api-react'
+import React, { useCallback } from 'react'
 
 import PropTypes from 'prop-types'
+
 import { BackButton, Bar, Tabs } from '@aragon/ui'
 
 import CommitteeInfo from './CommitteeInfo'
 import CommitteePermissions from './CommitteePermissions'
 import CommitteeActivity from './CommitteeActivity'
-
-import { map } from 'rxjs/operators'
-
-import tmAbi from '../abi/TokenManager.json'
-import tokenAbi from '../abi/minimeToken.json'
 
 import useSelectedCommittee from '../hooks/useSelectedCommitee'
 
@@ -21,62 +16,14 @@ const tabs = [
   { name: 'Activity', body: 'CommitteeActivity' },
 ]
 
-async function getToken(api, tmAddress) {
-  const tm = api.external(tmAddress, tmAbi)
-  const tokenAddress = await tm.token().toPromise()
-  const token = await api.external(tokenAddress, tokenAbi)
-
-  return [token, tokenAddress]
-}
-
-async function getMembers(api, tmAddress) {
-  const [token, tokenAddress] = await getToken(api, tmAddress)
-  const members = [
-    ...new Set(
-      await token
-        .pastEvents({ fromBlock: '0x0' })
-        .pipe(
-          map(event =>
-            event
-              .filter(e => e.event.toLowerCase() === 'transfer')
-              .map(e => e.returnValues[1])
-          )
-        )
-        .toPromise()
-    ),
-  ]
-
-  const filteredMembers = (
-    await Promise.all(
-      members.map(async m => [
-        m,
-        parseInt(await token.balanceOf(m).toPromise()),
-      ])
-    )
-  ).filter(m => m[1] > 0)
-
-  return [filteredMembers, tokenAddress]
-}
-
 const CommitteeDetails = React.memo(
   ({ committee, onBack, onChangeTab, onDeleteCommittee }) => {
-    const { api, appState } = useAragonApi()
-    const { isSyncing } = appState
-    const [members, setMembers] = useState(null)
-    const [tokenAddress, setTokenAddress] = useState('')
+    const { members, tokenAddress } = committee
 
     const [, selectCommittee, selectedTab] = useSelectedCommittee([])
 
     const currentTab =
       tabs.find(t => t.name.toLowerCase() === selectedTab) || {}
-
-    useEffect(() => {
-      api &&
-        getMembers(api, committee.address).then(res => {
-          setMembers(res[0])
-          setTokenAddress(res[1])
-        })
-    }, [isSyncing])
 
     const tabChangeHandler = useCallback(
       index => {

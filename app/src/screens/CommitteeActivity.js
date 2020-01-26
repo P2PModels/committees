@@ -239,6 +239,7 @@ function CommitteeActivity({ committee }) {
           </span>
         }
         isSyncing={isSyncing}
+        isIndividual
       />
       <ActivityLog
         activities={votingActivities}

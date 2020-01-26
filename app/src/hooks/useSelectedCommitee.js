@@ -20,7 +20,7 @@ const useSelectedCommittee = committees => {
   // The memoized proposal currently selected.
   const selectedCommittee = useMemo(() => {
     const id = segmentFromPath(path, 1)
-    // The `isSyncing` check prevents a proposal to be
+    // The `isSyncing` check prevents a committee to be
     // selected until the app state is fully ready.
     if (isSyncing || id === NO_COMMITTEE_ADDRESS) {
       return null

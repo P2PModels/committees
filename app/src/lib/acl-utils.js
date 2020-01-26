@@ -3,51 +3,6 @@ import { map, first } from 'rxjs/operators'
 import aclAbi from '../abi/ACL.json'
 import kernelAbi from '../abi/Kernel.json'
 
-async function getACLPermissions(api, aclHandler) {
-  const permissions = await aclHandler
-    .pastEvents({
-      fromBlock: '0x0',
-    })
-    .pipe(
-      map(event =>
-        event
-          .filter(e => e.event.toLowerCase() === 'setpermission')
-          .map(({ returnValues: { entity, app, role, allowed } }) => {
-            return {
-              entity,
-              app,
-              role,
-              allowed,
-            }
-          })
-      )
-    )
-    .toPromise()
-
-  return permissions
-}
-
-async function filterCommitteeAppsPermissions(aclPermissions, committeeApps) {
-  const permissions = aclPermissions.reduce(
-    (permissions, { entity, app, role, allowed }) => {
-      if (allowed) {
-        return { ...permissions, [entity + app + role]: { entity, app, role } }
-      } else {
-        return { ...permissions, [entity + app + role]: {} }
-      }
-    },
-    {}
-  )
-  const tokenRes = Object.values(permissions).filter(
-    ({ entity }) => entity === committeeApps.tokenManager
-  )
-  const votingRes = Object.values(permissions).filter(
-    ({ entity }) => entity === committeeApps.voting
-  )
-
-  return [tokenRes, votingRes]
-}
-
 export async function getRoles(api) {
   const appRoles = await api
     .getApps()
@@ -101,9 +56,4 @@ export async function getAclHandler(api) {
   const aclAddr = await kernel.acl().toPromise()
   const aclHandler = api.external(aclAddr, aclAbi)
   return aclHandler
-}
-export async function getPermissions(api, committeeApps) {
-  const aclHandler = await getAclHandler(api)
-  const aclPermissions = await getACLPermissions(api, aclHandler)
-  return filterCommitteeAppsPermissions(aclPermissions, committeeApps)
 }

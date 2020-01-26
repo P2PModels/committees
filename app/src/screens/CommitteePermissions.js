@@ -19,7 +19,7 @@ import {
 
 import { usePanelManagement } from '../components/SidePanels/'
 
-import { getRoles, getPermissions, getAclHandler } from '../lib/acl-utils'
+import { getRoles, getAclHandler } from '../lib/acl-utils'
 
 import LocalAppBadge from '../components/LocalIdentityBadge/LocalAppBadge'
 
@@ -35,7 +35,7 @@ const emptyState = type => (
 
 const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
   const { api, appState } = useAragonApi()
-  const { isSyncing } = appState
+  const { isSyncing, permissions } = appState
 
   const [tokenPermissions, setTokenPermissions] = useState(null)
   const [votingPermissions, setVotingPermissions] = useState(null)
@@ -44,22 +44,31 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
   const { setUpNewPermission } = usePanelManagement()
 
   useEffect(() => {
-    api &&
+    if (api && permissions) {
       getRoles(api).then(
         roleRegistry => {
           setRoleRegistry(roleRegistry)
         },
         err => console.log(err)
       )
-    api &&
-      getPermissions(api, {
+      const [t, v] = filterPermissions(permissions, {
         tokenManager: tmAddress,
         voting: votingAddress,
-      }).then(res => {
-        setTokenPermissions(res[0])
-        setVotingPermissions(res[1])
       })
+      setTokenPermissions(t)
+      setVotingPermissions(v)
+    }
   }, [isSyncing])
+
+  const filterPermissions = (permissions, committeeApps) => {
+    const tokenRes = Object.values(permissions).filter(
+      ({ entity }) => entity === committeeApps.tokenManager
+    )
+    const votingRes = Object.values(permissions).filter(
+      ({ entity }) => entity === committeeApps.voting
+    )
+    return [tokenRes, votingRes]
+  }
 
   const deletePermissionHandler = async (entity, app, role) => {
     const aclHandler = await getAclHandler(api)
