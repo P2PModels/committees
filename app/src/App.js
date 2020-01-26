@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { useAragonApi, useGuiStyle, usePath } from '@aragon/api-react'
+import { useAragonApi, useGuiStyle } from '@aragon/api-react'
 import {
   Main,
   Button,
@@ -37,7 +37,6 @@ const App = () => {
 
   const compactMode = layoutName === 'small'
 
-  const [path, requestPath] = usePath()
   const panelConfiguration = {
     setActivePanel: p => setPanel(p),
     setPanelProps: p => setPanelProps(p),
