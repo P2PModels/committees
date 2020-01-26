@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useAragonApi, usePath } from '@aragon/api-react'
 
-const COMMITTEE_ID_PATH_RE = /^\/committee\/(0x[a-fA-F0-9]{40})\/(info|permissions|activity)\b\/?$/
+const COMMITTEE_ID_PATH_RE = /^\/(0x[a-fA-F0-9]{40})\/(info|permissions|activity)\b\/?$/
 const NO_COMMITTEE_ADDRESS = null
 
 const segmentFromPath = (path, i) => {
@@ -34,7 +34,7 @@ const useSelectedCommittee = committees => {
       requestPath(
         committee === NO_COMMITTEE_ADDRESS
           ? ''
-          : `/committee/${committee.address}/${tab.toLowerCase()}/`
+          : `/${committee.address}/${tab.toLowerCase()}/`
       )
     },
     [requestPath]
