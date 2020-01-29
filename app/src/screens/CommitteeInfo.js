@@ -101,7 +101,6 @@ const CommitteeInfo = ({
             }
             renderEntry={({ account }) => {
               const isCurrentUser = addressesEqual(account, connectedAccount)
-              console.log(isCurrentUser)
               return [
                 <div
                   css={`

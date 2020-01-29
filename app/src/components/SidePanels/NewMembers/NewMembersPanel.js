@@ -13,7 +13,6 @@ import {
   decoupleMembers,
   DEFAULT_MEMBER,
 } from '../../../lib/committee-utils'
-import { isAddress } from 'web3-utils'
 
 const NewMembersPanel = ({ committeeAddress, isUnique }) => {
   const { api } = useAragonApi()
@@ -32,9 +31,9 @@ const NewMembersPanel = ({ committeeAddress, isUnique }) => {
     setMembers(members)
   }
 
-  const submitHandler = () => {
+  const handleSubmit = () => {
     const error = {}
-    const errorMsg = validateMembers(members, isAddress)
+    const errorMsg = validateMembers(members, isUnique)
     if (errorMsg) error.members = errorMsg
 
     if (Object.keys(error).length) setError({ ...error })
@@ -44,7 +43,7 @@ const NewMembersPanel = ({ committeeAddress, isUnique }) => {
   }
 
   return (
-    <Form onSubmit={submitHandler} submitText="Submit Members">
+    <Form onSubmit={handleSubmit} submitText="Add Members">
       <FormField
         required
         label="New Members"

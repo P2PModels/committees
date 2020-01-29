@@ -9,7 +9,7 @@ const segmentFromPath = (path, i) => {
     return NO_COMMITTEE_ADDRESS
   }
   const matches = path.match(COMMITTEE_ID_PATH_RE)
-  return matches ? matches[i] : NO_COMMITTEE_ADDRESS
+  return matches && i < matches.length ? matches[i] : NO_COMMITTEE_ADDRESS
 }
 
 const useSelectedCommittee = committees => {
@@ -39,7 +39,9 @@ const useSelectedCommittee = committees => {
     },
     [requestPath]
   )
-  const selectedTab = segmentFromPath(path, 2)
+  const selectedTab = useMemo(() => {
+    return segmentFromPath(path, 2)
+  }, [path])
   return [selectedCommittee, selectCommittee, selectedTab]
 }
 

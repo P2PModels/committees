@@ -17,7 +17,7 @@ const tabs = [
 ]
 
 const CommitteeDetails = React.memo(
-  ({ committee, onBack, onChangeTab, onDeleteCommittee }) => {
+  ({ committee, onBack }) => {
     const { members, tokenAddress } = committee
 
     const [, selectCommittee, selectedTab] = useSelectedCommittee([])
@@ -29,7 +29,6 @@ const CommitteeDetails = React.memo(
       index => {
         const tabName = tabs[index].name
         selectCommittee(committee, tabName)
-        onChangeTab(tabs[index].name)
       },
       [tabs]
     )
@@ -78,8 +77,6 @@ const CommitteeDetails = React.memo(
 CommitteeDetails.propTypes = {
   committee: PropTypes.object,
   onBack: PropTypes.func,
-  onChangeTab: PropTypes.func,
-  onDeleteCommittee: PropTypes.func,
 }
 
 export default CommitteeDetails

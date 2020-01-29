@@ -29,9 +29,12 @@ const App = () => {
   const { layoutName } = useLayout()
   const { appState } = useAragonApi()
   const { committees, isSyncing } = appState
-  const [selectedCommittee, selectCommittee] = useSelectedCommittee(committees)
+  const [
+    selectedCommittee,
+    selectCommittee,
+    selectedTab,
+  ] = useSelectedCommittee(committees)
 
-  const [screenName, setScreenName] = useState('committees')
   const [panel, setPanel] = useState(null)
   const [panelProps, setPanelProps] = useState(null)
 
@@ -50,8 +53,8 @@ const App = () => {
   const ScreenAction = () => {
     const { setupNewCommittee, setupNewMembers } = usePanelManagement()
 
-    switch (screenName) {
-      case 'committees':
+    switch (selectedTab) {
+      case null:
         return (
           <Button
             mode="strong"
@@ -84,17 +87,12 @@ const App = () => {
 
   const clickCommitteeHandler = committee => {
     selectCommittee(committee)
-    setScreenName('info')
   }
 
   const backHandler = () => {
     selectCommittee(null)
-    setScreenName('committees')
   }
 
-  const changeTabHandler = tabName => {
-    setScreenName(tabName.toLowerCase())
-  }
   return (
     <React.Fragment>
       <PanelContext.Provider value={panelConfiguration}>
@@ -140,7 +138,6 @@ const App = () => {
               <CommitteeDetails
                 committee={selectedCommittee}
                 onBack={backHandler}
-                onChangeTab={changeTabHandler}
                 onDeleteCommittee={() => selectCommittee(null)}
               />
             ) : (
