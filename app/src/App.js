@@ -92,7 +92,6 @@ const App = () => {
   const backHandler = () => {
     selectCommittee(null)
   }
-
   return (
     <React.Fragment>
       <PanelContext.Provider value={panelConfiguration}>

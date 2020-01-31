@@ -8,8 +8,6 @@ const CommitteeCard = React.memo(({ committee, onClickCommittee }) => {
   const { address, name, tokenSymbol } = committee
   return (
     <StyledCard
-      width="250px"
-      height="250px"
       onClick={() => {
         onClickCommittee(committee)
       }}
@@ -38,7 +36,7 @@ const StyledCard = styled(Card)`
   align-items: center;
   cursor: pointer;
   border-radius: 10px 10px 10px 10px;
-  margin: 3%;
+  margin: 3% 0;
 `
 
 CommitteeCard.propTypes = {
