@@ -29,7 +29,7 @@
   ],
   "environments": {
     "default": {
-      "network": "development",
+      "network": "rpc",
       "appName": "committees.open.aragonpm.eth"
     },
     "rinkeby": {
