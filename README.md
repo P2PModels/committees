@@ -65,9 +65,12 @@ To deploy to an organization you can use the [Aragon CLI](https://hack.aragon.or
 aragon dao install <dao-address> committees.open.aragonpm.eth --app-init-args <minimetoken-factory> <ens-registry> <initial-manager>
 ```
 
-In rinkeby, `minimetoken-factory` is 0xad991658443c56b3dE2D7d7f5d8C68F339aEef29 and `ens-registry` is 0x98df287b6c145399aaa709692c8d308357bc085d. In mainnet, they are 0xA29EF584c389c67178aE9152aC9C543f9156E2B3 and 0x314159265dd8dbb310642f98f50c066173c1259b, respectively.
+| Contract in Network | `<minimetoken-factory>` | `<ens-registry>` |
+| Rinkeby             | `0xad991658443c56b3dE2D7d7f5d8C68F339aEef29` | `0x98df287b6c145399aaa709692c8d308357bc085d` |
+| Mainnet             | `0xA29EF584c389c67178aE9152aC9C543f9156E2B3` | `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
 
-The `initial-manager` can be set to the DAO's general voting app.
+
+The `<initial-manager>` can be set to the DAO's general voting app.
 
 The Committees app must have the `APP_MANAGER_ROLE` permission on `Kernel` and the `CREATE_PERMISSIONS_ROLE` permission on the `ACL`.
 
