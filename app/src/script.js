@@ -181,14 +181,14 @@ async function initialize(acl) {
 
         // Token events
         case 'Transfer': {
-          const { _to: member, address } = returnValues
+          const { _to: member, contractAddress } = returnValues
           const committee = state.committees.find(
-            ({ tokenAddress }) => tokenAddress === address
+            ({ tokenAddress }) => tokenAddress === contractAddress
           )
           if (!committee) {
             break
           }
-          const token = api.external(address, tokenAbi)
+          const token = api.external(contractAddress, tokenAbi)
 
           const members = (
             await Promise.all(
@@ -224,21 +224,28 @@ async function initialize(acl) {
       return nextState
     },
     {
-      externals: [{ contract: acl, initializationBlock: 0 }],
+      externals: [
+        {
+          contract: acl,
+          initializationBlock: await acl.getInitializationBlock().toPromise(),
+        },
+      ],
       init: async cachedState => {
+        let committees = cachedState ? cachedState.committees : []
         try {
-          cachedState &&
-            cachedState.committees.map(({ tokenAddress }) =>
-              subscribeToExternal(tokenAddress, tokenAbi)
-            )
+          // If cached committees, use without members
+          committees = committees.map(({ tokenAddress }, i) => {
+            subscribeToExternal(tokenAddress, tokenAbi)
+            return { ...cachedState.committees[i], members: [] }
+          })
         } catch (e) {
           console.error(e)
         }
         return {
-          committees: [],
-          permissions: {},
-          isSyncing: false,
           ...cachedState,
+          committees, // override committees[i].members
+          permissions: {}, // override permissions
+          isSyncing: false,
         }
       },
     }
@@ -251,6 +258,6 @@ function subscribeToExternal(address, abi, initializationBlock = 0) {
     .external(address, abi)
     .events({ fromBlock: `0x${initializationBlock.toString(16)}` })
     .subscribe(({ event, returnValues, address }) =>
-      api.emitTrigger(event, { address, ...returnValues })
+      api.emitTrigger(event, { ...returnValues, contractAddress: address })
     )
 }

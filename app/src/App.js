@@ -7,6 +7,7 @@ import {
   BaseStyles,
   Header,
   IconPlus,
+  SyncIndicator,
   useTheme,
   useLayout,
   textStyle,
@@ -96,7 +97,7 @@ const App = () => {
     <React.Fragment>
       <PanelContext.Provider value={panelConfiguration}>
         <BaseStyles />
-        {committees && committees.length === 0 && (
+        {committees && committees.length === 0 && !selectedCommittee && (
           <NoCommitteesLayout>
             <NoCommittees isSyncing={isSyncing}>
               <ScreenAction />
@@ -105,6 +106,7 @@ const App = () => {
         )}
         {committees && committees.length > 0 && (
           <React.Fragment>
+            <SyncIndicator visible={isSyncing} />
             <Header
               primary={
                 <React.Fragment>
