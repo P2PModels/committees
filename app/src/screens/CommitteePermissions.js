@@ -85,15 +85,16 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
           margin-bottom: ${2 * GU}px;
         `}
       >
-        See{' '}
+        You may need an updated version of aragon.js to grant and remove
+        permissions. You can find an updated version in{' '}
+        <Link href="https://preview.ipfs.technology">
+          https://preview.ipfs.technology
+        </Link>{' '}
+        (see
         <Link href="https://github.com/P2PModels/committees/issues/17">
-          Issue #17
+          issue #17
         </Link>
-        . At the moment, permission <b>granting</b> and permission{' '}
-        <b>removal</b> only work for <b>Externally Owned Accounts (EOA)</b> that
-        are the managers of thoose permissions. If the permission manager is set
-        to a <b>Token Manager</b> or a <b>Voting app</b>, you have to
-        grant/revoke it using the native permissions app.
+        )
       </Info>
       <PermissionsTable
         type="Individual"
