@@ -2,18 +2,18 @@
   "name": "Committees",
   "author": "Paulo Colombo & David Llop",
   "description": "Delegate certain DAO operations on a subgroup of members in order to speed them up",
-  "details_url": "/public/meta/details.md",
+  "details_url": "/meta/details.md",
   "source_url": "https://github.com/p2pmodels/committees",
   "icons": [{
-    "src": "/public/meta/icon.svg",
+    "src": "/meta/icon.svg",
     "sizes": "56x56"
   }],
   "screenshots": [
-    { "src": "/public/meta/screenshot-1.png" },
-    { "src": "/public/meta/screenshot-2.png" },
-    { "src": "/public/meta/screenshot-3.png" },
-    { "src": "/public/meta/screenshot-4.png" },
-    { "src": "/public/meta/screenshot-5.png" }
+    { "src": "/meta/screenshot-1.png" },
+    { "src": "/meta/screenshot-2.png" },
+    { "src": "/meta/screenshot-3.png" },
+    { "src": "/meta/screenshot-4.png" },
+    { "src": "/meta/screenshot-5.png" }
   ],
   "start_url": "/index.html",
   "script": "/script.js"
