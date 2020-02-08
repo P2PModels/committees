@@ -151,6 +151,7 @@ async function getActivities(apps, api) {
 }
 
 function ActivityLog({ heading, isIndividual, activities, isSyncing }) {
+  console.log(activities)
   return (
     <DataView
       heading={heading}
@@ -223,8 +224,8 @@ function CommitteeActivity({ committee }) {
   useEffect(() => {
     let isSubscribed = true
     api &&
-      getActivities([tm, voting], api).then(() => {
-        if (isSubscribed) setActivities()
+      getActivities([tm, voting], api).then(activities => {
+        if (isSubscribed) setActivities(activities)
       })
     return () => (isSubscribed = false)
   }, [isSyncing])
