@@ -46,15 +46,21 @@ export function useIdentity(address) {
   }
 
   React.useEffect(() => {
-    resolveLocalIdentity(address).then(handleNameChange)
+    let isSubscribed = true
+    resolveLocalIdentity(address).then(() => {
+      if (isSubscribed) handleNameChange()
+    })
 
     const subscription = updates$.subscribe(updatedAddress => {
       if (updatedAddress.toLowerCase() === address.toLowerCase()) {
         // Resolve and update state when the identity have been updated.
-        resolveLocalIdentity(address).then(handleNameChange)
+        resolveLocalIdentity(address).then(() => {
+          if (isSubscribed) handleNameChange()
+        })
       }
     })
     return () => {
+      isSubscribed = false
       subscription.unsubscribe()
     }
   }, [address, handleNameChange, resolveLocalIdentity, updates$])
