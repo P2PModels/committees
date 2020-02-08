@@ -22,13 +22,16 @@ const MembersField = React.memo(
     const fieldsLayout = useFieldsLayout()
 
     useEffect(() => {
+      let isSubscribed = true
       if (!focusLastMemberNext || !membersRef.current) return
-
-      setFocusLastMemberNext(false)
-      const elts = membersRef.current.querySelectorAll('.member')
-      if (elts.length > 0) {
-        elts[elts.length - 1].querySelector('input').focus()
+      if (isSubscribed) {
+        setFocusLastMemberNext(false)
+        const elts = membersRef.current.querySelectorAll('.member')
+        if (elts.length > 0) {
+          elts[elts.length - 1].querySelector('input').focus()
+        }
       }
+      return () => (isSubscribed = false)
     }, [focusLastMemberNext])
 
     const focusLastMember = useCallback(() => {

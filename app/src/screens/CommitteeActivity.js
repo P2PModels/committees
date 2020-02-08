@@ -221,7 +221,12 @@ function CommitteeActivity({ committee }) {
     : null
 
   useEffect(() => {
-    api && getActivities([tm, voting], api).then(setActivities)
+    let isSubscribed = true
+    api &&
+      getActivities([tm, voting], api).then(() => {
+        if (isSubscribed) setActivities()
+      })
+    return () => (isSubscribed = false)
   }, [isSyncing])
 
   return (

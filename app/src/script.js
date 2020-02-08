@@ -153,7 +153,6 @@ async function initialize(acl) {
           }
 
           subscribeToExternal(tokenAddress, tokenAbi)
-
           break
         }
         case 'ModifyCommitteeInfo': {

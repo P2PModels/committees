@@ -44,10 +44,11 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
   const { setUpNewPermission } = usePanelManagement()
 
   useEffect(() => {
+    let isSubscribed = true
     if (api && permissions) {
       getRoles(api).then(
         roleRegistry => {
-          setRoleRegistry(roleRegistry)
+          if (isSubscribed) setRoleRegistry(roleRegistry)
         },
         err => console.log(err)
       )
@@ -55,9 +56,12 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
         tokenManager: tmAddress,
         voting: votingAddress,
       })
-      setTokenPermissions(t)
-      setVotingPermissions(v)
+      if (isSubscribed) {
+        setTokenPermissions(t)
+        setVotingPermissions(v)
+      }
     }
+    return () => (isSubscribed = false)
   }, [isSyncing])
 
   const filterPermissions = (permissions, committeeApps) => {
