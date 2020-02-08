@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import makeCancelable from 'makecancelable'
 import { Subject } from 'rxjs'
 import { useApi } from '@aragon/api-react'
 
@@ -46,21 +47,21 @@ export function useIdentity(address) {
   }
 
   React.useEffect(() => {
-    let isSubscribed = true
-    resolveLocalIdentity(address).then(() => {
-      if (isSubscribed) handleNameChange()
-    })
+    const cancel = makeCancelable(
+      resolveLocalIdentity(address),
+      handleNameChange
+    )
 
     const subscription = updates$.subscribe(updatedAddress => {
       if (updatedAddress.toLowerCase() === address.toLowerCase()) {
         // Resolve and update state when the identity have been updated.
         resolveLocalIdentity(address).then(() => {
-          if (isSubscribed) handleNameChange()
+          handleNameChange()
         })
       }
     })
     return () => {
-      isSubscribed = false
+      cancel()
       subscription.unsubscribe()
     }
   }, [address, handleNameChange, resolveLocalIdentity, updates$])

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import makeCancelable from 'makecancelable'
 import { useAragonApi } from '@aragon/api-react'
 
 import PropTypes from 'prop-types'
@@ -44,24 +45,17 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
   const { setUpNewPermission } = usePanelManagement()
 
   useEffect(() => {
-    let isSubscribed = true
     if (api && permissions) {
-      getRoles(api).then(
-        roleRegistry => {
-          if (isSubscribed) setRoleRegistry(roleRegistry)
-        },
-        err => console.log(err)
-      )
-      const [t, v] = filterPermissions(permissions, {
-        tokenManager: tmAddress,
-        voting: votingAddress,
-      })
-      if (isSubscribed) {
+      return makeCancelable(getRoles(api), roleRegistry => {
+        setRoleRegistry(roleRegistry)
+        const [t, v] = filterPermissions(permissions, {
+          tokenManager: tmAddress,
+          voting: votingAddress,
+        })
         setTokenPermissions(t)
         setVotingPermissions(v)
-      }
+      })
     }
-    return () => (isSubscribed = false)
   }, [isSyncing])
 
   const filterPermissions = (permissions, committeeApps) => {

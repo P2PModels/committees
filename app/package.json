@@ -8,10 +8,11 @@
     "@aragon/ui": "^1.2.1",
     "core-js": "^3.1.4",
     "date-fns": "^2.8.1",
+    "makecancelable": "^1.1.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "regenerator-runtime": "^0.13.2",
-    "styled-components": "^4.3.2"
+    "styled-components": "^4.3.2",
   },
   "devDependencies": {
     "@babel/core": "^7.5.4",

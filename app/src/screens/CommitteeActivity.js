@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import makeCancelable from 'makecancelable'
 
 import { useAragonApi } from '@aragon/api-react'
 import { DataView, useTheme, textStyle } from '@aragon/ui'
@@ -221,12 +222,8 @@ function CommitteeActivity({ committee }) {
     : null
 
   useEffect(() => {
-    let isSubscribed = true
-    api &&
-      getActivities([tm, voting], api).then(activities => {
-        if (isSubscribed) setActivities(activities)
-      })
-    return () => (isSubscribed = false)
+    if (api)
+      return makeCancelable(getActivities([tm, voting], api), setActivities)
   }, [isSyncing])
 
   return (

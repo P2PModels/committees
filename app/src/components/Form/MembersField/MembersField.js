@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import makeCancelable from 'makecancelable'
 import { Button, Field, IconPlus, theme, textStyle, GU } from '@aragon/ui'
 
 import MemberField from './MemberField/MemberField'
@@ -22,16 +23,16 @@ const MembersField = React.memo(
     const fieldsLayout = useFieldsLayout()
 
     useEffect(() => {
-      let isSubscribed = true
-      if (!focusLastMemberNext || !membersRef.current) return
-      if (isSubscribed) {
-        setFocusLastMemberNext(false)
-        const elts = membersRef.current.querySelectorAll('.member')
-        if (elts.length > 0) {
-          elts[elts.length - 1].querySelector('input').focus()
-        }
-      }
-      return () => (isSubscribed = false)
+      return makeCancelable(
+        new Promise(() => {
+          if (!focusLastMemberNext || !membersRef.current) return
+          setFocusLastMemberNext(false)
+          const elts = membersRef.current.querySelectorAll('.member')
+          if (elts.length > 0) {
+            elts[elts.length - 1].querySelector('input').focus()
+          }
+        })
+      )
     }, [focusLastMemberNext])
 
     const focusLastMember = useCallback(() => {
