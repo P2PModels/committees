@@ -46,7 +46,7 @@ const CommitteeInfo = ({
     members,
   },
 }) => {
-  const { api } = useAragonApi()
+  const { api, appState } = useAragonApi()
   const theme = useTheme()
   const network = useNetwork()
   const connectedAccount = useConnectedAccount()
@@ -55,6 +55,9 @@ const CommitteeInfo = ({
   const votingType = getVotingType(votingParams)
   const { layoutName } = useLayout()
   const compact = layoutName === 'small'
+  const { isSyncing, cachedSubscriptions } = appState
+  const syncingCommittee =
+    isSyncing || cachedSubscriptions[tokenAddress].isSyncing
 
   const removeMemberHandler = async (committee, member) => {
     await api.removeMember(committee, member).toPromise()
@@ -80,7 +83,7 @@ const CommitteeInfo = ({
                 {members && <Tag>{members.length}</Tag>}
               </React.Fragment>
             }
-            status={members ? 'default' : 'loading'}
+            status={!syncingCommittee ? 'default' : 'loading'}
             statusEmpty={
               <div
                 css={`

@@ -1,5 +1,7 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
+import { concat } from 'rxjs'
+import { endWith, startWith } from 'rxjs/operators'
 import Aragon, { events } from '@aragon/api'
 
 import tmAbi from './abi/TokenManager.json'
@@ -75,12 +77,51 @@ retryEvery(() =>
 async function initialize(acl) {
   return api.store(
     async (state, { event, returnValues }) => {
+      if (event !== 'SetPermission' && event !== 'ChangePermissionManager') {
+        console.log(event, returnValues, state)
+      }
       let nextState = { ...state }
 
       if (event === events.SYNC_STATUS_SYNCING) {
         return { ...nextState, isSyncing: true }
       } else if (event === events.SYNC_STATUS_SYNCED) {
         return { ...nextState, isSyncing: false }
+      } else if (event === 'SYNC_SUBSCRIPTION_SYNCING') {
+        const { address } = returnValues
+        return {
+          ...nextState,
+          cachedSubscriptions: {
+            ...nextState.cachedSubscriptions,
+            [address]: {
+              ...nextState.cachedSubscriptions[address],
+              isSyncing: true,
+            },
+          },
+        }
+      } else if (event === 'SYNC_SUBSCRIPTION_CACHED') {
+        const { address, blockNumber } = returnValues
+        return {
+          ...nextState,
+          cachedSubscriptions: {
+            ...nextState.cachedSubscriptions,
+            [address]: {
+              ...nextState.cachedSubscriptions[address],
+              blockNumber,
+            },
+          },
+        }
+      } else if (event === 'SYNC_SUBSCRIPTION_SYNCED') {
+        const { address } = returnValues
+        return {
+          ...nextState,
+          cachedSubscriptions: {
+            ...nextState.cachedSubscriptions,
+            [address]: {
+              ...nextState.cachedSubscriptions[address],
+              isSyncing: true,
+            },
+          },
+        }
       }
 
       switch (event) {
@@ -230,20 +271,23 @@ async function initialize(acl) {
         },
       ],
       init: async cachedState => {
-        let committees = cachedState ? cachedState.committees : []
+        const committees = cachedState ? cachedState.committees : []
         try {
-          // If cached committees, use without members
-          committees = committees.map(({ tokenAddress }, i) => {
-            subscribeToExternal(tokenAddress, tokenAbi)
-            return { ...cachedState.committees[i], members: [] }
+          committees.map(({ tokenAddress }, i) => {
+            subscribeToExternal(
+              tokenAddress,
+              tokenAbi,
+              cachedState.cachedSubscriptions[tokenAddress]
+            )
           })
         } catch (e) {
           console.error(e)
         }
         return {
+          cachedSubscriptions: {},
+          committees: [],
+          permissions: {},
           ...cachedState,
-          committees, // override committees[i].members
-          permissions: {}, // override permissions
           isSyncing: false,
         }
       },
@@ -251,12 +295,55 @@ async function initialize(acl) {
   )
 }
 
-function subscribeToExternal(address, abi, initializationBlock = 0) {
+function subscribeToExternal(address, abi, cachedBlockNumber) {
   console.log(`Subscribing to ${address}…`)
-  api
-    .external(address, abi)
-    .events({ fromBlock: `0x${initializationBlock.toString(16)}` })
-    .subscribe(({ event, returnValues, address }) =>
+  ;(async function() {
+    const REORG_SAFETY_BLOCK_AGE = 100
+
+    const currentBlock = await api.web3Eth('getBlockNumber').toPromise()
+    const cacheBlockHeight = Math.max(currentBlock - REORG_SAFETY_BLOCK_AGE, 0) // clamp to 0 for safety
+
+    const pastEventsOptions = {
+      toBlock: cacheBlockHeight,
+      // When using cache, fetch events from the next block after cache
+      fromBlock: cachedBlockNumber ? cachedBlockNumber + 1 : undefined,
+    }
+    const contract = api.external(address, abi)
+    const pastEvents$ = contract.pastEvents(pastEventsOptions).pipe(
+      startWith({
+        event: 'SYNC_SUBSCRIPTION_SYNCING',
+        returnValues: {
+          address,
+          from: cachedBlockNumber,
+          to: cacheBlockHeight,
+        },
+      }),
+      endWith({
+        event: 'SYNC_SUBSCRIPTION_CACHED',
+        returnValues: {
+          address,
+          blockNumber: cacheBlockHeight,
+        },
+      })
+    )
+    const lastEvents$ = contract
+      .pastEvents({ fromBlock: cacheBlockHeight + 1, toBlock: currentBlock })
+      .pipe(
+        endWith({
+          event: 'SYNC_SUBSCRIPTION_SYNCED',
+          returnValues: {
+            address,
+          },
+        })
+      )
+    const currentEvents$ = contract.events({ fromBlock: currentBlock })
+
+    concat(
+      pastEvents$,
+      lastEvents$,
+      currentEvents$
+    ).subscribe(({ event, returnValues, address }) =>
       api.emitTrigger(event, { ...returnValues, contractAddress: address })
     )
+  })().catch(console.error)
 }
