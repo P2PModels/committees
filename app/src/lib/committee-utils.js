@@ -9,7 +9,7 @@ export const DEFAULT_TOKEN_TYPES = [
 export const PCT = 10 ** 16
 export const DAYS = 60 * 60 * 24
 
-const DEFAULT_VOTING_DURATION = 30
+const DEFAULT_VOTING_DURATION = 7
 export const DEFAULT_VOTING_TYPES = [
   {
     name: 'Consensus',
