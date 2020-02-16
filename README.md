@@ -72,7 +72,19 @@ aragon dao install <dao-address> committees.open.aragonpm.eth --app-init-args <m
 
 The `<initial-manager>` can be set to the DAO's general voting app, and `<network>` can be `local`, `rinkeby`, or `mainnet`.
 
-The Committees app must have the `APP_MANAGER_ROLE` permission on `Kernel` and the `CREATE_PERMISSIONS_ROLE` permission on the `ACL`.
+Assign committee `CREATE_PERMISSIONS_ROLE` and `MANAGE_MEMBERS_ROLE` to DAO's voting app:
+
+```sh
+aragon dao acl create <dao> <committees> CREATE_COMMITTEE_ROLE <voting> <voting> --environment aragon:<network>
+aragon dao acl create <dao> <committees> MANAGE_MEMBERS_ROLE <voting> <voting> --environment aragon:<network>
+```
+
+The Committees app must have the `APP_MANAGER_ROLE` permission on `Kernel` and the `CREATE_PERMISSIONS_ROLE` permission on the `ACL`. It can be set up from the Permissions native app, or through the CLI.
+
+```sh
+aragon dao acl create <dao> <dao> APP_MANAGER_ROLE <committees> <voting> --environment aragon:<network>
+aragon dao acl create <dao> <acl> CREATE_PERMISSIONS_ROLE <committees> <voting> --environment aragon:<network>
+```
 
 ## Structure
 
