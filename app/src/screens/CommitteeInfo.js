@@ -57,7 +57,10 @@ const CommitteeInfo = ({
   const compact = layoutName === 'small'
   const { isSyncing, cachedSubscriptions } = appState
   const syncingCommittee =
-    isSyncing || cachedSubscriptions[tokenAddress].isSyncing
+    isSyncing ||
+    !tokenAddress ||
+    !cachedSubscriptions[tokenAddress] ||
+    cachedSubscriptions[tokenAddress].isSyncing
 
   const removeMemberHandler = async (committee, member) => {
     await api.removeMember(committee, member).toPromise()

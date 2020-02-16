@@ -1,7 +1,7 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
-import { concat } from 'rxjs'
-import { endWith, startWith } from 'rxjs/operators'
+import { concat, from } from 'rxjs'
+import { endWith, startWith, mergeMap } from 'rxjs/operators'
 import Aragon, { events } from '@aragon/api'
 
 import tmAbi from './abi/TokenManager.json'
@@ -118,7 +118,7 @@ async function initialize(acl) {
             ...nextState.cachedSubscriptions,
             [address]: {
               ...nextState.cachedSubscriptions[address],
-              isSyncing: true,
+              isSyncing: false,
             },
           },
         }
@@ -277,7 +277,10 @@ async function initialize(acl) {
             subscribeToExternal(
               tokenAddress,
               tokenAbi,
-              cachedState.cachedSubscriptions[tokenAddress]
+              cachedState &&
+                cachedState.cachedSubscriptions &&
+                cachedState.cachedSubscriptions[tokenAddress] &&
+                cachedState.cachedSubscriptions[tokenAddress].blockNumber
             )
           })
         } catch (e) {
@@ -310,6 +313,7 @@ function subscribeToExternal(address, abi, cachedBlockNumber) {
     }
     const contract = api.external(address, abi)
     const pastEvents$ = contract.pastEvents(pastEventsOptions).pipe(
+      mergeMap(pastEvents => from(pastEvents)),
       startWith({
         event: 'SYNC_SUBSCRIPTION_SYNCING',
         returnValues: {
@@ -329,6 +333,7 @@ function subscribeToExternal(address, abi, cachedBlockNumber) {
     const lastEvents$ = contract
       .pastEvents({ fromBlock: cacheBlockHeight + 1, toBlock: currentBlock })
       .pipe(
+        mergeMap(pastEvents => from(pastEvents)),
         endWith({
           event: 'SYNC_SUBSCRIPTION_SYNCED',
           returnValues: {
