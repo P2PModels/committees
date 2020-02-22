@@ -1,6 +1,6 @@
 {
   "name": "committees",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "",
   "dependencies": {
     "@aragon/os": "^4.3.0"
