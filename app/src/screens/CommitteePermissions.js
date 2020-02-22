@@ -11,9 +11,6 @@ import {
   textStyle,
   Button,
   IconPlus,
-  Info,
-  GU,
-  Link,
   useTheme,
   useLayout,
 } from '@aragon/ui'
@@ -77,23 +74,6 @@ const CommitteePermissions = React.memo(({ tmAddress, votingAddress }) => {
 
   return (
     <React.Fragment>
-      <Info
-        mode="warning"
-        css={`
-          margin-bottom: ${2 * GU}px;
-        `}
-      >
-        You may need an updated version of aragon.js to grant and remove
-        permissions. You can find an updated version in{' '}
-        <Link href="https://preview.ipfs.technology">
-          https://preview.ipfs.technology
-        </Link>{' '}
-        (see
-        <Link href="https://github.com/P2PModels/committees/issues/17">
-          issue #17
-        </Link>
-        )
-      </Info>
       <PermissionsTable
         type="Individual"
         permissions={tokenPermissions}
