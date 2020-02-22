@@ -121,6 +121,12 @@ const Name = styled.p`
       : `
         justify-content: center;
         margin-bottom: ${1 * GU}px;
+        text-align: center;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+        padding: 0 1rem;
       `}
 `
 

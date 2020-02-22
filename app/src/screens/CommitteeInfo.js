@@ -70,7 +70,9 @@ const CommitteeInfo = ({
     <Split
       primary={
         <React.Fragment>
-          <Box>{description}</Box>
+          <Box heading="Description">
+            {description || <EmptyText>There is no description</EmptyText>}
+          </Box>
           <DataView
             mode="table"
             heading={
@@ -263,6 +265,10 @@ const InfoRow = styled.div`
     flex-shrink: 1;
     ${textStyle('body3')}
   }
+`
+
+const EmptyText = styled.span`
+  font-style: italic;
 `
 CommitteeInfo.propTypes = {
   committee: PropTypes.shape({

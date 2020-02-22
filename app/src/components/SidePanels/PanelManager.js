@@ -1,7 +1,8 @@
 import React, { Suspense, createContext } from 'react'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
-import { SidePanel } from '@aragon/ui'
+import { SidePanel, LoadingRing } from '@aragon/ui'
 
 const dynamicImport = Object.freeze({
   NewCommitteePanel: () => import('./NewCommittee/NewCommitteePanel'),
@@ -32,7 +33,13 @@ export const PanelManager = React.memo(
         opened={!!activePanel}
         onClose={onClose}
       >
-        <Suspense fallback={<div>Loading Panel...</div>}>
+        <Suspense
+          fallback={
+            <LoadingScreen>
+              <LoadingRing mode="half-circle" />
+            </LoadingScreen>
+          }
+        >
           {PanelComponent && <PanelComponent {...panelProps} />}
         </Suspense>
       </SidePanel>
@@ -42,6 +49,14 @@ export const PanelManager = React.memo(
     return prevProps.activePanel === nextProps.activePanel
   }
 )
+
+const LoadingScreen = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: calc(50% - 30px);
+  position: relative;
+`
 
 PanelManager.propTypes = {
   activePanel: PropTypes.string,
